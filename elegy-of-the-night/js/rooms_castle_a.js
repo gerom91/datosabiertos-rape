@@ -99,7 +99,7 @@
     b.enemy(74, 39, 'marionette');
     b.enemy(47, 30, 'mirror_wraith');
     // ---- middle tier
-    b.candle(12, 23);
+    b.candle(12, 23, 'sub:axe');
     b.candle(84, 23);
     b.enemy(78, 25, 'gargoyle');
     b.item(91, 25, 'velvet_hat');
@@ -142,6 +142,7 @@
 
   // G4 — upper gallery corridor: paintings and chandeliers
   R({ id: 'gal_upper', area: 'gallery', x: 20, y: 16, w: 4, h: 1, lvl: 1, entry: 'L0', decor: ['painting', 'chandelier', 'painting', 'window', 'curtain', 'painting', 'statue'] }, (b) => {
+    b.relic(1, 6, 'lore_lens'); // optional relic on the high west ledge
     b.shell();
     b.door('L', 0);
     b.door('R', 0);
@@ -299,6 +300,7 @@
 
   // L2 — the great hall of the Long Library: tall bookcases, walkways and ladders
   R({ id: 'lib_hall', area: 'library', x: 33, y: 16, w: 5, h: 3, lvl: 1, entry: 'L1', decor: ['globe', 'lamp', 'window', 'lamp', 'window', 'lamp'] }, (b) => {
+    b.relic(118, 6, 'familiar_faerie'); // optional relic on the top-east shelf ledge
     b.shell();
     b.door('L', 1);
     b.door('R', 2);
@@ -507,7 +509,7 @@
     b.plat(79, 83, 15);
     b.fill(86, 12, 94, 13);
     b.candle(6, 10);
-    b.candle(37, 11);
+    b.candle(37, 11, 'sub:stopwatch');
     b.candle(67, 11);
     b.candle(88, 23);
     b.candle(90, 10);
@@ -723,6 +725,7 @@
 
   // K3 — east tower of the Keep, above the Clock Tower (reached by bat through B2)
   R({ id: 'keep_east', area: 'keep', x: 23, y: 0, w: 3, h: 3, lvl: 5, entry: 'B2', far: 'redmoon', decor: ['window', 'banner', 'curtain', 'candelabra', 'chain'] }, (b) => {
+    b.relic(1, 34, 'echo_bat'); // optional relic on the west ledge above the stairs
     b.shell();
     b.door('B', 2);
     b.door('L', 2);

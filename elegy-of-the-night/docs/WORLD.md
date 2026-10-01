@@ -203,3 +203,15 @@ ARCHIVES  (x →, y ↓; each cell = one 24x14-tile screen)
 * Re-findable starting gear (erased by the Scrivener in the intro): dhampir_blade (keep_hall, hidden),
   crimson_shield (cha_confess), twilight_mail (cat_crypt), nightfall_cloak (vault_treasure),
   blood_signet (cav_lake).
+* **Optional relics**: `lore_lens` (gal_upper, high west ledge), `familiar_faerie` (lib_hall, top-east
+  ledge), `familiar_bat` (hun_gallery, high east ledge), `echo_bat` (keep_east, west ledge). Gravity
+  Boots and the Lantern are listed in the progression table.
+* **Sub-weapon candles**: dagger (ent_upper), axe (gal_hall), holy water (gal_entry), cross (gal_east),
+  stopwatch (clk_gears), quill (arc_hall1), inkwell (stk_corridor), grimoire (scr_desks).
+* **Vertical transitions**: rising through a hole gives vy −6 (~60 px) with no short-hop gravity cut for
+  22 frames (`riseT`), enough to clear a two-tile floor beside the hole and drift onto it while holding
+  a direction. `tools/validate.js` simulates the same arrival (feet at `room.ph - 2`).
+* **Background decor** placement (`tiles.js`): floor pieces (statue, desk, candelabra, pew, throne,
+  pillar…) are only drawn where a real floor with headroom exists in that cell and are shifted onto it;
+  pillars and ladders span from the real ceiling to that floor; hanging pieces (chandelier, curtain,
+  stalactite, pendulum) need a ceiling in their cell. Rooms with `art:[...]` (Archives) paint exact pieces.

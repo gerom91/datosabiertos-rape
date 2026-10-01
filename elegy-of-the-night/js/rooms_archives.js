@@ -832,6 +832,7 @@
     hunterArt.push(k % 3 === 2 || (x + 5 > 29 && x + 5 < 42) ? ['crest', x + 4.7, 17.2] : ['candelabra', x + 5, 26]);
   }
   A({ id: 'hun_gallery', area: 'arc_hunters', x: 24, y: 1, w: 5, h: 2, lvl: 3, entry: 'B1', noDecor: true, art: hunterArt }, (b) => {
+    b.relic(118, 6, 'familiar_bat'); // optional relic on the high east ledge
     b.shell();
     hatch(b, 1);
     b.door('R', 0);

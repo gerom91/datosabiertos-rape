@@ -223,6 +223,9 @@
   const wants2 = (e, f) => e.phase === 1 && !e.dying && e.hp <= e.maxHp * (f || 0.5);
   // a sleeping boss (or one whose intro is still playing) cannot be hurt
   const awake = (e) => e.started && G.game.boss === e;
+  // wake up only once the player is close AND the boss is well inside the camera view,
+  // so the intro scene is always staged with the boss on screen
+  const wakeSeen = (dist) => (e) => Math.abs(e.dxp()) < dist && Math.abs(e.dyp()) < 260 && e.onScreen(-24);
 
   // ---- small drawing helpers ----------------------------------------------------------------
   function glow(ctx, x, y, r, col, a) {
@@ -665,7 +668,7 @@
     desc: N('A giant knit from every soldier who ever died defending the gallery. It cannot leave the floor it was buried in, so it reaches for you instead.', 'Un gigante tejido con cada soldado que murió defendiendo la galería. No puede abandonar el suelo donde lo enterraron, así que te alcanza con los brazos.'),
     area: 'gallery', boss: true, hp: 600, atk: 22, def: 2, exp: 400, w: 56, h: 104,
     weak: ['hit', 'holy'], bony: true, noBlood: true, heavy: true, noDeathFx: true, el: 'hit',
-    wakeDist: 150, previewState: 'idle',
+    wake: wakeSeen(160), previewState: 'idle',
     reward: { relic: 'leap_stone' },
     init(e) {
       e.z = -1; // drawn behind the floor tiles: the buried part stays hidden
@@ -1406,7 +1409,7 @@
     desc: N('The Scrivener’s rough draft of Alucard: every move copied, nothing understood. It forgets to guard itself right after it strikes.', 'El borrador que el Escriba hizo de Alucard: cada movimiento copiado, nada comprendido. Olvida protegerse justo después de atacar.'),
     area: 'arc_stacks', boss: true, hp: 900, atk: 30, def: 4, exp: 900, w: 14, h: 40,
     weak: ['holy', 'fire'], absorb: ['dark'], noDeathFx: true, blood: '#3a1a5a', el: 'cut',
-    introScene: 'doppel_pre', previewState: 'idle',
+    introScene: 'doppel_pre', wake: wakeSeen(160), previewState: 'idle',
     reward: { relic: 'soul_wolf' },
     init(e) {
       e.phase = 1;
@@ -2405,7 +2408,7 @@
     desc: N('The memory of a hunter, written so many times into the Chronicle that it learned to stand up on its own. It still guards the hall with its whip and its vows.', 'El recuerdo de un cazador, escrito tantas veces en la Crónica que aprendió a ponerse en pie por sí solo. Aún guarda el salón con su látigo y sus votos.'),
     area: 'arc_hunters', boss: true, hp: 1600, atk: 40, def: 8, exp: 1600, w: 16, h: 44,
     weak: ['dark'], absorb: ['holy'], noBlood: true, noDeathFx: true, blood: '#b4e6fa', el: 'hit', immune: ['poison'],
-    introScene: 'echo_pre', previewState: 'idle',
+    introScene: 'echo_pre', wake: wakeSeen(200), previewState: 'idle',
     reward: { scene: 'echo_post' },
     init(e) {
       e.phase = 1;
@@ -3064,7 +3067,7 @@
     desc: N('A bookworm that ate its way through three centuries of hunters’ vows and grew vast on them. It swallowed a page of the Chronicle, and the page still shines through its ribs.', 'Una polilla de libros que devoró tres siglos de juramentos de cazadores y creció desmesurada con ellos. Se tragó una página de la Crónica, y la página aún brilla entre sus costillas.'),
     area: 'arc_vault', boss: true, hp: 2600, atk: 50, def: 10, exp: 3000, w: 40, h: 40,
     weak: ['fire'], noBlood: true, noDeathFx: true, blood: '#e8dcb8', el: 'hit', heavy: true,
-    introScene: 'biblio_pre', wakeDist: 220, previewState: 'idle',
+    introScene: 'biblio_pre', wake: wakeSeen(230), previewState: 'idle',
     reward: { items: ['page2', 'blood_ink'] },
     init(e) {
       e.z = -1;
@@ -3806,7 +3809,7 @@
     desc: N('Built to ring the castle’s hours, re-wound by the Scrivener to keep his. When it is angry, the seconds themselves hold their breath.', 'Construido para tocar las horas del castillo, el Escriba le dio cuerda para que marcara las suyas. Cuando se enfada, hasta los segundos contienen el aliento.'),
     area: 'clocktower', boss: true, hp: 3200, atk: 56, def: 12, exp: 4200, w: 30, h: 56,
     weak: ['thunder', 'hit'], resist: ['cut'], armored: true, noBlood: true, noDeathFx: true, flying: true, el: 'cut', immune: ['poison'],
-    introScene: 'seraph_pre', wakeDist: 260, previewState: 'idle',
+    introScene: 'seraph_pre', wake: wakeSeen(240), previewState: 'idle',
     reward: { items: ['page3', 'hourglass_pin'] },
     init(e) {
       e.phase = 1;
@@ -4656,7 +4659,7 @@
     desc: N('Brother Ambrose Vellum, once chronicler of the Belmonts. He mixed his blood into the ink of their Chronicle to make the past forget itself, and became the hand that holds the quill.', 'El hermano Ambrose Vellum, antaño cronista de los Belmont. Mezcló su sangre con la tinta de su Crónica para que el pasado se olvidara de sí mismo, y se convirtió en la mano que sostiene la pluma.'),
     area: 'keep', boss: true, hp: 5000, atk: 66, def: 12, exp: 0, w: 24, h: 64,
     weak: ['holy'], resist: ['dark'], immune: ['poison'], noBlood: true, noDeathFx: true, flying: true, el: 'dark',
-    introScene: 'final_pre', music: 'boss_final', wakeDist: 230, previewState: 'idle',
+    introScene: 'final_pre', music: 'boss_final', wake: wakeSeen(240), previewState: 'idle',
     reward: { scene: 'ending' },
     init(e) {
       e.phase = 1;
@@ -4903,7 +4906,7 @@
           sfx('swing_light', { vol: 0.5, pitch: 0.6 });
         }
         if (t < W) {
-          e.qx = U.approach(e.qx, pl.cx, 2.2);
+          if (t < W - 12) e.qx = U.approach(e.qx, pl.cx, 2.2); // locks just before the stab
           e.quill = { x: U.lerp(e.cx + 70, e.qx, t / W), y: A.top + 24, a: Math.PI / 2, k: t / W };
         } else if (t < W + 6) {
           const u = (t - W) / 6;
