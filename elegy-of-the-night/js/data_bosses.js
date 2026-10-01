@@ -373,9 +373,19 @@
     });
   }
   function colTorso(p2, cracked) {
-    return spr('coltorso' + (p2 ? 'b' : 'a') + (cracked ? 'c' : ''), 132, 104, colPal(p2), (c) => {
-      c.translate(66, 82); // floor point
+    return spr('coltorso' + (p2 ? 'b' : 'a') + (cracked ? 'c' : ''), 140, 128, colPal(p2), (c) => {
+      c.translate(70, 106); // floor point
       const EM = p2 ? CB_SPECT[0] : CB_EMBER[0], EL = p2 ? CB_SPECT[1] : CB_EMBER[1];
+      // broken spears of the soldiers who fell to it, still stuck in its back
+      [[-20, -30, -60, -92], [14, -36, 52, -96], [26, -20, 64, -60]].forEach(([x1, y1, x2, y2], i) => {
+        gfx.limb(c, x1, y1, x2, y2, 2.2, i === 1 ? CB.R : CB.DD);
+        const a = Math.atan2(y2 - y1, x2 - x1);
+        if (i !== 2) gfx.poly(c, [x2 + Math.cos(a) * 7, y2 + Math.sin(a) * 7, x2 + Math.cos(a + 1.9) * 3, y2 + Math.sin(a + 1.9) * 3, x2 + Math.cos(a - 1.9) * 3, y2 + Math.sin(a - 1.9) * 3], CB.S);
+        else {
+          gfx.poly(c, [x2 - 4, y2 - 2, x2 + 10, y2 - 12, x2 + 6, y2 + 4], CB.R);
+          gfx.poly(c, [x2 - 2, y2 - 1, x2 + 8, y2 - 9, x2 + 6, y2], CB.RL);
+        }
+      });
       // spine down into the floor
       for (let i = 0; i < 9; i++) {
         const y = 18 - i * 8.5;
@@ -431,10 +441,6 @@
         gfx.circle(c, s * COL_SHX, COL_SHY, 10, CB.M);
         gfx.circle(c, s * (COL_SHX - 2), COL_SHY - 3, 4.5, CB.L);
       }
-      // rusted pauldron hanging on the left shoulder
-      gfx.poly(c, [-58, -70, -36, -78, -26, -68, -34, -54, -56, -54], CB.R);
-      gfx.poly(c, [-56, -68, -38, -75, -30, -68, -36, -64, -54, -62], CB.RL);
-      gfx.limb(c, -54, -58, -35, -58, 1.4, CB.DD);
       // neck
       for (let i = 0; i < 2; i++) {
         c.fillStyle = CB.S;
@@ -529,18 +535,26 @@
     });
   }
   function flameSkull(f) {
-    return spr('colfskull' + f, 20, 20, ['#f2e8cf', '#d2c39f', '#a8987a', '#120b08', '#ff8a2a', '#ffd25a', '#c03a10'], (c) => {
-      c.translate(10, 10);
+    return spr('colfskull' + f, 28, 28, ['#f2e8cf', '#d2c39f', '#a8987a', '#120b08', '#ff8a2a', '#ffd25a', '#c03a10'], (c) => {
+      c.translate(14, 14);
       c.rotate((f / 8) * TAU);
-      gfx.ellipse(c, 0, -1, 6.5, 6, 0, '#d2c39f');
-      gfx.ellipse(c, -1.5, -3, 4, 3, 0, '#f2e8cf');
-      gfx.poly(c, [-4, 3, 4, 3, 3, 7, -3, 7], '#a8987a');
+      // flame tongues behind
+      for (let i = 0; i < 5; i++) {
+        const a = Math.PI * 0.75 + (i - 2) * 0.35;
+        gfx.poly(c, [Math.cos(a - 0.5) * 6, Math.sin(a - 0.5) * 6, Math.cos(a) * (12 + (i % 2) * 2), Math.sin(a) * (12 + (i % 2) * 2), Math.cos(a + 0.5) * 6, Math.sin(a + 0.5) * 6], i % 2 ? '#ff8a2a' : '#c03a10');
+      }
+      gfx.ellipse(c, 0, -1, 8, 7.5, 0, '#d2c39f');
+      gfx.ellipse(c, -2, -3.5, 5, 3.5, 0, '#f2e8cf');
+      gfx.poly(c, [-5, 4, 5, 4, 4, 9, -4, 9], '#a8987a');
       c.fillStyle = '#120b08';
-      c.fillRect(-4, -1, 3, 3);
-      c.fillRect(1, -1, 3, 3);
+      c.fillRect(-5, -1, 4, 4);
+      c.fillRect(1, -1, 4, 4);
+      c.fillRect(-1, 4, 2, 2);
       c.fillStyle = '#ffd25a';
-      c.fillRect(-3, 0, 1, 1);
-      c.fillRect(2, 0, 1, 1);
+      c.fillRect(-4, 0, 2, 2);
+      c.fillRect(2, 0, 2, 2);
+      c.fillStyle = '#120b08';
+      for (let i = 0; i < 4; i++) c.fillRect(-4 + i * 2.4, 7, 1, 2);
     });
   }
 
@@ -548,16 +562,17 @@
   function colShoulder(e, side) {
     return { x: e.ox + side * COL_SHX + e.lean * 0.6, y: e.floor + COL_SHY + e.bob + e.sink };
   }
+  // guard pose: claws raised beside the skull, slowly flexing
   function colRest(e, side) {
     const A = e.A;
-    const x = e.ox + side * (side < 0 ? 104 : 96);
-    return { x: U.clamp(x, A.left + 20, A.right - 20), y: e.floor - 7 + e.sink * 0.2 };
+    const x = e.ox + side * (side < 0 ? 104 : 98) + Math.sin(e.t * 0.03 + side) * 3;
+    return { x: U.clamp(x, A.left + 20, A.right - 20), y: e.floor - 84 + Math.sin(e.t * 0.045 + side * 2) * 4 + e.sink };
   }
   // solve an arm (used by both ai and draw)
   function colSolve(e, arm) {
     const S = colShoulder(e, arm.side);
     const side = arm.side;
-    const r = ik(S.x, S.y, arm.x, arm.y, COL_L1, COL_L2, (p) => -p.y * 1 + side * p.x * 0.7);
+    const r = ik(S.x, S.y, arm.x, arm.y, COL_L1, COL_L2, (p) => side * (p.x - S.x) - 0.3 * (p.y - S.y));
     arm.S = S;
     arm.E = { x: r.ex, y: r.ey };
     arm.W = { x: r.wx, y: r.wy };
@@ -633,8 +648,8 @@
         fl.owner = e;
       },
       drawFn(p, ctx, sx, sy) {
-        glow(ctx, sx, sy, 12, '#ff6020', 0.55);
-        ctx.drawImage(flameSkull(Math.floor(p.t / 3) % 8), sx - 10, sy - 10);
+        glow(ctx, sx, sy, 16, '#ff6020', 0.6);
+        ctx.drawImage(flameSkull(Math.floor(p.t / 3) % 8), sx - 14, sy - 14);
         lit(null, ctx, sx, sy, 40, '#ff8a2a', 0.8);
       },
     });
@@ -697,10 +712,12 @@
             gfx.shake(2, 8);
           }
           if (t % 20 === 0) sfx('stomp', { vol: 0.6, pitch: 0.5 + t / 200 });
-          // claws burst out first
+          // claws burst out of the floor first
           L.y = R.y = e.floor + 30 - seg(t, 30, 60) * 37;
-          L.x = restL.x;
-          R.x = restR.x;
+          L.x = e.ox - 112;
+          R.x = e.ox + 104;
+          L.ang = Math.PI * 1.5;
+          R.ang = Math.PI * 1.5;
           if (t === 34) {
             G.fx.debris(restL.x, e.floor - 4, '#c8c0bc', 10);
             G.fx.debris(restR.x, e.floor - 4, '#c8c0bc', 10);
@@ -710,8 +727,9 @@
           e.sink = 120 * (1 - eout((t - 60) / 90));
           if (t % 4 === 0) G.fx.debris(e.ox + U.rnd(-40, 40), e.floor - 2, '#c8c0bc', 2);
           if (t % 5 === 0) gfx.shake(3, 6);
-          armTo(L, restL.x, restL.y);
-          armTo(R, restR.x, restR.y);
+          const k = seg(t, 100, 150);
+          armTo(L, U.lerp(e.ox - 112, restL.x, k), U.lerp(e.floor - 7, restL.y, k));
+          armTo(R, U.lerp(e.ox + 104, restR.x, k), U.lerp(e.floor - 7, restR.y, k));
           if (t === 150) {
             e.sink = 0;
             e.flare = 1;
@@ -801,9 +819,9 @@
         e.jaw = Math.max(0, e.jaw - 0.05);
         if (L.on) armTo(L, restL.x, restL.y + Math.sin(e.t * 0.05) * 1, 0.12);
         armTo(R, restR.x, restR.y + Math.sin(e.t * 0.05 + 1) * 1, 0.12);
-        L.pose = R.pose = 0;
-        L.ang = Math.PI;
-        R.ang = 0;
+        L.pose = R.pose = Math.sin(e.t * 0.05) > 0.6 ? 1 : 0;
+        L.ang = U.lerp(L.ang, Math.PI * 1.32, 0.1);
+        R.ang = U.lerp(R.ang, Math.PI * 1.68, 0.1);
         if (wants2(e)) {
           e.setState('rip');
           return;
@@ -1105,7 +1123,10 @@
     lit(e, ctx, ox + e.headX, base - 86, 60, p2 ? '#b080ff' : '#ffb050', 0.7 + e.flare * 0.4);
     // torso
     const cracked = !e.armL.on || p2;
-    put(e, ctx, colTorso(p2, cracked), ox + Math.round(lean * 0.6), base, 66, 82);
+    put(e, ctx, colTorso(p2, cracked), ox + Math.round(lean * 0.6), base, 70, 106);
+    // the soul ember throbbing inside the ribs
+    const pulse = 0.55 + Math.sin(e.t * 0.12) * 0.2 + e.flare * 0.2;
+    glow(ctx, ox + Math.round(lean * 0.6), base - 38, 22, p2 ? CB_SPECT[0] : CB_EMBER[0], pulse);
     // skull + jaw
     const hx = ox + Math.round(e.headX + lean), hy = base - 86;
     const jo = e.jaw * 7;

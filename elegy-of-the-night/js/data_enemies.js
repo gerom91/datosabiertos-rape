@@ -685,6 +685,554 @@
     },
   });
 
+  // ================================================================== MIRROR WRAITH (gallery)
+  const WR = {
+    gl: '#e4f0fc', g: '#a6c0e6', gs: '#6e8ec4', gd: '#405c92', gdd: '#283a64',
+    fr: '#d8b45a', frD: '#7e5a26', glass: '#bdeaf6', glassH: '#f6fcff', crack: '#1c2842', eye: '#ff3048',
+  };
+  const WR_PAL = Object.values(WR);
+  const WR_ARMS = {
+    float: [[[3, -29], [6, -24], [9.5, -27]], [[-2, -29], [-3.5, -23], [-1.5, -18.5]]],
+    lunge: [[[3, -29], [9, -29.5], [15, -31]], [[-1, -29], [5.5, -27.5], [12, -26]]],
+    shriek: [[[3, -29], [8, -33], [12.5, -38.5]], [[-2, -29], [-7, -33], [-11, -37.5]]],
+  };
+  function wraithImg(f, pose) {
+    return spr('mwraith_' + pose + f, 46, 56, WR_PAL, (c) => {
+      c.translate(23, 54);
+      const w = (f / 4) * Math.PI * 2;
+      const lean = pose === 'lunge' ? 0.5 : pose === 'shriek' ? -0.18 : 0.06;
+      const stream = pose === 'lunge' ? 5 : 0;
+      c.translate(0, -24);
+      c.rotate(lean);
+      c.translate(0, 24);
+      // hair streaming back (behind everything)
+      const hw = Math.sin(w) * 1.6, hw2 = Math.sin(w + 1.3) * 1.8, hw3 = Math.sin(w + 2.6) * 2;
+      gfx.poly(c, [0, -43, -5, -42.5, -9 - stream, -37 + hw, -12 - stream * 1.4, -30 + hw2, -14 - stream * 1.6, -21 + hw3, -10 - stream, -24 + hw2, -8, -28, -4, -33], WR.gd);
+      gfx.poly(c, [0, -43, -5, -42.5, -8.5 - stream, -37.5 + hw, -11 - stream * 1.3, -31 + hw2, -12.5 - stream * 1.5, -24 + hw3, -9, -29, -4.5, -34], WR.gs);
+      gfx.poly(c, [-1, -43, -5, -42, -8 - stream, -38 + hw, -9.5 - stream, -33 + hw2, -6, -35], WR.g);
+      gfx.limb(c, -3, -41.5, -8.5 - stream, -36 + hw, 0.9, WR.gl);
+      gfx.limb(c, -7, -36, -11 - stream * 1.3, -27 + hw2, 0.8, WR.g);
+      // back arm
+      const arms = WR_ARMS[pose];
+      const ab = arms[1];
+      gfx.limb(c, ab[0][0], ab[0][1], ab[1][0], ab[1][1], 1.8, WR.gs);
+      gfx.limb(c, ab[1][0], ab[1][1], ab[2][0], ab[2][1], 1.6, WR.gs);
+      // gown flowing into a ghostly tail that streams backwards
+      const t1 = Math.sin(w) * 2, t2 = Math.sin(w + 2) * 2, t3 = Math.sin(w + 4) * 1.5;
+      gfx.poly(c, [-4, -30, 4.5, -30, 3.6, -24, 7.5, -13, 5, -7 + t1, 1.5, -3 + t2, -2 - stream, 0 + t1, -4 - stream, -5, -8 - stream, -2 + t3, -9 - stream, -8, -12 - stream, -6 + t2, -9.5, -13, -5, -22], WR.g);
+      gfx.poly(c, [-4, -30, -1.5, -30, -2.5, -22, -6, -13, -8 - stream, -8, -12 - stream, -6 + t2, -9.5, -13, -5, -22], WR.gs);
+      gfx.poly(c, [-6, -13, -8 - stream, -8, -12 - stream, -6 + t2, -9.5, -12], WR.gd);
+      // folds and a high lace collar
+      gfx.limb(c, 1.5, -22, 3.5, -10, 0.9, WR.gs);
+      gfx.limb(c, -1, -22, -1.5, -8, 0.9, WR.gs);
+      gfx.limb(c, 4, -22, 6, -14, 0.9, WR.gl);
+      gfx.ellipse(c, 0.5, -30.5, 4.6, 1.5, 0, WR.gl);
+      // mirror-handle neck
+      gfx.limb(c, 1, -33, 0.7, -30, 1.6, WR.frD);
+      // the face: an oval hand-mirror, cracked
+      c.save();
+      c.translate(2.2, -37.5);
+      gfx.ellipse(c, 0, 0, 5.1, 6.1, 0, WR.frD);
+      gfx.ellipse(c, 0.4, -0.3, 4.4, 5.4, 0, WR.fr);
+      gfx.ellipse(c, 0.6, -0.2, 3.3, 4.3, 0, WR.glass);
+      gfx.limb(c, -1.2, -1.2, 0.8, -3.4, 1.1, WR.glassH);
+      const cx0 = 1.2, cy0 = 0.8;
+      [[3.4, -2.4], [-2, 1.8], [1.8, 3.8], [-1, -3], [3.6, 2]].forEach(([x, y]) => gfx.limb(c, cx0, cy0, x, y, 0.8, WR.crack));
+      c.fillStyle = WR.eye;
+      c.fillRect(-1, 0, 1, 1);
+      c.fillStyle = WR.fr;
+      c.fillRect(-0.4, -7.6, 2, 2); // finial
+      c.fillStyle = WR.frD;
+      c.fillRect(0, -6.2, 1, 1);
+      c.restore();
+      // front arm with long fingers
+      const af = arms[0];
+      gfx.limb(c, af[0][0], af[0][1], af[1][0], af[1][1], 1.9, WR.gl);
+      gfx.limb(c, af[1][0], af[1][1], af[2][0], af[2][1], 1.7, WR.gl);
+      const [hx, hy] = af[2], ha = Math.atan2(af[2][1] - af[1][1], af[2][0] - af[1][0]);
+      for (let i = -1; i <= 1; i++) gfx.limb(c, hx, hy, hx + Math.cos(ha + i * 0.5) * 2.6, hy + Math.sin(ha + i * 0.5) * 2.6, 0.9, WR.gl);
+    });
+  }
+  def('mirror_wraith', {
+    name: N('Mirror Wraith', 'Espectro del espejo'),
+    desc: N('A lady who gazed into an enchanted looking-glass until it gazed back. The cracked mirror is all that remains of her face.', 'Una dama que miró un espejo encantado hasta que el espejo le devolvió la mirada. El cristal agrietado es todo lo que queda de su rostro.'),
+    area: 'gallery', hp: 32, atk: 22, def: 0, exp: 14, w: 16, h: 30, flying: true, gold: [10, 40],
+    el: 'ice', weak: ['holy'], immune: ['poison'], noBlood: true, blood: '#cfe8ff', stunTime: 8,
+    drops: [{ id: 'mana_tonic', p: 0.05 }, { id: 'silver_locket', p: 0.01 }],
+    init(e) {
+      e.setState('float');
+      e.cool = 80 + e.rnd.int(0, 60);
+      e.alpha = 0.85;
+      e.lv = [0, 0];
+    },
+    onHitCheck(e) {
+      return e.alpha > 0.45;
+    },
+    ai(e, g) {
+      const st = e.state, p = e.player;
+      if (st === 'float') {
+        const side = e.cx < p.cx ? -1 : 1;
+        const tx = p.cx + side * 74, ty = p.cy - 16 + Math.sin(e.t * 0.045) * 12;
+        e.vx = U.approach(e.vx, U.clamp((tx - e.cx) * 0.03, -0.9, 0.9), 0.05);
+        e.vy = U.approach(e.vy, U.clamp((ty - e.cy) * 0.03, -0.8, 0.8), 0.05);
+        e.face();
+        e.alpha = U.approach(e.alpha, 0.85, 0.05);
+        if (--e.cool <= 0 && e.dist() < 240) {
+          e.setState('fade');
+          sfx('ghost_wail', 0.35, 0.8);
+        }
+      } else if (st === 'fade') {
+        e.vx *= 0.9;
+        e.vy *= 0.9;
+        e.alpha = Math.max(0, 0.85 * (1 - e.stT / 28));
+        if (e.stT % 3 === 0) G.fx.particle(e.cx + U.rnd(-7, 7), e.cy + U.rnd(-12, 12), U.rnd(-0.4, 0.4), U.rnd(-1, -0.2), U.pick(['#cfe6ff', '#ffffff', '#8ab0e8']), 26, { glow: true });
+        if (e.stT >= 28) {
+          e.alpha = 0;
+          e.setState('hidden');
+        }
+      } else if (st === 'hidden') {
+        e.vx = e.vy = 0;
+        if (e.stT >= 26) {
+          // slip out of the glass right behind the player
+          const behind = -(p.facing || 1);
+          e.x = U.clamp(p.cx + behind * 64, 12, g.room.pw - 12) - e.w / 2;
+          e.y = p.cy - 16 - e.h / 2;
+          e.face();
+          e.setState('appear');
+          sfx('magic_cast', 0.45, 1.6);
+        }
+      } else if (st === 'appear') {
+        e.alpha = Math.min(0.9, e.stT / 18);
+        e.face();
+        e.vy = Math.sin(e.stT * 0.3) * 0.2;
+        if (e.stT === 10) G.fx.spark(e.cx + e.facing * 2, e.y - 3, '#e8f6ff', 6);
+        if (e.stT >= 28) {
+          const a = Math.atan2(p.cy - 6 - e.cy, p.cx - e.cx);
+          e.lv = [Math.cos(a) * 4.2, Math.sin(a) * 4.2];
+          e.facing = e.lv[0] < 0 ? -1 : 1;
+          e.setState('lunge');
+          sfx('ghost_wail', 0.5, 1.4);
+        }
+      } else if (st === 'lunge') {
+        const k = e.stT < 22 ? 1 : Math.max(0, 1 - (e.stT - 22) / 16);
+        e.vx = e.lv[0] * k;
+        e.vy = e.lv[1] * k;
+        if (e.stT % 5 === 0) G.fx.particle(e.cx + U.rnd(-5, 5), e.cy + U.rnd(-8, 8), -e.vx * 0.1, -e.vy * 0.1, '#bcd8ff', 14, { glow: true });
+        if (e.stT >= 38) {
+          e.setState('float');
+          e.cool = 110 + e.rnd.int(0, 80);
+        }
+      }
+      e.drift();
+    },
+    draw(e, ctx, sx, sy) {
+      const st = e.state;
+      let img;
+      if (st === 'lunge') img = wraithImg(0, 'lunge');
+      else if (st === 'appear') img = wraithImg(Math.floor(e.t / 6) % 4, 'shriek');
+      else img = wraithImg(Math.floor(e.t / 8) % 4, 'float');
+      const bob = st === 'float' || st === 'fade' ? Math.round(Math.sin(e.t * 0.08) * 1.5) : 0;
+      if (!e.preview) G.gfx.addLight(sx, sy - 18, 56, '#8ab8ff', 0.7 * e.alpha);
+      if (st === 'lunge' && !e.preview) {
+        // fading afterimages along the lunge
+        const a0 = ctx.globalAlpha;
+        for (let i = 2; i >= 1; i--) {
+          ctx.globalAlpha = a0 * 0.22 * (3 - i);
+          gfx.drawAnchored(img, sx - e.vx * 5 * i, sy + 8 - e.vy * 5 * i, 23, 54, e.facing < 0, null, ctx);
+        }
+        ctx.globalAlpha = a0;
+      }
+      e.blit(ctx, img, sx, sy + 8 + bob, 23, 54, e.facing < 0);
+      if (st === 'appear' && e.stT > 6 && e.stT < 16) glow(ctx, sx + e.facing * 2, sy - 31, 3 + (e.stT % 4), '#ffffff', 0.8);
+    },
+  });
+
+  // ================================================================== GARGOYLE (gallery)
+  const GA = { l: '#b4b0a4', m: '#87837b', d: '#5d5a54', dd: '#3a3835', horn: '#dcd6c4', eye: '#ff5a1e', eyeH: '#ffd468', moss: '#5a6a3c' };
+  const GA_PAL = Object.values(GA);
+  // a bat wing pointing "up" from the shoulder (origin), rotated by `a` (negative = swings back/down)
+  function gargWing(c, a, cols, scale) {
+    c.save();
+    c.rotate(a);
+    c.scale(scale || 1, scale || 1);
+    gfx.poly(c, [0, 0, 1.5, -9, 4, -19, 0.5, -14.5, -3, -18, -3.5, -11.5, -8, -13, -6, -5, -2, 1], cols[0]);
+    gfx.poly(c, [-2.5, -7, -3.5, -11.5, -8, -13, -6, -5, -2, 1], cols[1]);
+    gfx.limb(c, 0, 0, 1.5, -9, 1.6, cols[2]);
+    gfx.limb(c, 1.5, -9, 4, -19, 1.1, cols[2]);
+    gfx.limb(c, 1.5, -9, -3, -18, 1, cols[2]);
+    gfx.limb(c, 1.5, -9, -8, -13, 1, cols[2]);
+    gfx.circle(c, 1.5, -9, 1, GA.horn);
+    c.restore();
+  }
+  function gargHead(c, x, y, awake, snarl) {
+    c.save();
+    c.translate(x, y);
+    // horns sweeping back
+    gfx.poly(c, [-1, -3, -5, -6.5, -9, -6, -6, -4.8, -2.5, -1.5], GA.horn);
+    gfx.poly(c, [-5, -6.5, -9, -6, -7.5, -5.4], GA.m);
+    // skull + brow
+    gfx.ellipse(c, 0, 0, 4.6, 3.8, 0.1, GA.m);
+    gfx.poly(c, [-1, -3.6, 4.5, -2.6, 5.4, -1, 1, -1.6], GA.l);
+    // muzzle and jaw
+    gfx.poly(c, [2, -1.5, 8, -0.6, 8.4, 1.2, 3, 2], GA.m);
+    gfx.poly(c, [2.5, 1.8, 7.5, snarl ? 3.6 : 2.2, 6.5, snarl ? 4.8 : 3.4, 2, 3.6], GA.d);
+    c.fillStyle = GA.horn;
+    c.fillRect(6, 1.2, 1, snarl ? 2 : 1.4);
+    c.fillRect(4, 1.4, 1, 1.4);
+    // pointed ear
+    gfx.poly(c, [-2, -2, -4, -6.5, -1, -3.5], GA.d);
+    // eye
+    c.fillStyle = awake ? GA.eye : GA.dd;
+    c.fillRect(2.4, -1.6, 2, 1.4);
+    if (awake) {
+      c.fillStyle = GA.eyeH;
+      c.fillRect(3.4, -1.6, 1, 1);
+    }
+    c.restore();
+  }
+  function gargImg(mode, f, awake) {
+    return spr('garg_' + mode + f + (awake ? 'a' : ''), 56, 48, GA_PAL, (c) => {
+      c.translate(28, 46);
+      if (mode === 'perch') {
+        // tail curled around the feet
+        gfx.limb(c, -7, -5, -13, -3, 2.2, GA.d);
+        gfx.limb(c, -13, -3, -11, 0, 1.8, GA.d);
+        gfx.poly(c, [-11, 0, -9, -1.8, -8.5, 0.6], GA.dd);
+        // folded wings rising behind the shoulders
+        gfx.poly(c, [-3, -19, -6, -33, -9, -27, -12, -30, -11, -16, -6, -8], GA.d);
+        gfx.poly(c, [-5, -21, -6, -33, -8, -25, -9, -14], GA.m);
+        gfx.limb(c, -4.5, -20, -6, -32.5, 1.1, GA.l);
+        // haunch & back foot
+        gfx.ellipse(c, -3, -8, 6.5, 5.5, 0, GA.m);
+        gfx.ellipse(c, -4.5, -9.5, 3.8, 3, 0, GA.l);
+        gfx.poly(c, [-6, -2.5, 3, -2.5, 4.5, 0.4, -7, 0.4], GA.d);
+        c.fillStyle = GA.horn;
+        c.fillRect(3.5, -1, 2, 1.2);
+        // hunched torso
+        gfx.ellipse(c, 1.5, -15, 6.2, 8.5, 0.45, GA.m);
+        gfx.ellipse(c, 3.6, -14.5, 3, 5.5, 0.4, GA.l);
+        gfx.limb(c, -3.5, -21, -4.5, -11, 1, GA.d);
+        // front arm braced on the ground
+        gfx.limb(c, 5, -18, 7.5, -9, 3, GA.m);
+        gfx.limb(c, 7.5, -9, 9, -2, 2.6, GA.m);
+        gfx.limb(c, 6, -17, 8.2, -9.5, 1, GA.l);
+        gfx.poly(c, [7, -2, 12, -1.4, 12.6, 0.5, 7, 0.5], GA.d);
+        c.fillStyle = GA.horn;
+        c.fillRect(12, -1, 1.4, 1.2);
+        c.fillRect(10, -0.6, 1.2, 1);
+        // moss on the shoulders (it has been still for a long time)
+        if (!awake) {
+          c.fillStyle = GA.moss;
+          c.fillRect(-2, -23, 3, 1);
+          c.fillRect(-4, -22, 2, 1);
+        }
+        gargHead(c, 8.5, -22, awake, awake);
+        return;
+      }
+      // flying / diving: body roughly horizontal
+      const wingA = mode === 'dive' ? -1.75 : [-0.35, -1.05, -1.9, -1.05][f];
+      if (mode === 'dive') {
+        c.translate(0, -18);
+        c.rotate(0.62);
+        c.translate(0, 18);
+      }
+      // far wing (darker, behind)
+      c.save();
+      c.translate(-1, -21);
+      gargWing(c, wingA + 0.25, [GA.d, GA.dd, GA.m], 0.92);
+      c.restore();
+      // tail
+      gfx.limb(c, -8, -17, -15, -15 + (mode === 'dive' ? 0 : Math.sin(f * 1.6) * 1.5), 2, GA.d);
+      gfx.limb(c, -15, -15, -20, -17, 1.4, GA.d);
+      gfx.poly(c, [-20, -17, -23, -19, -22, -15.5], GA.dd);
+      // legs tucked back with talons
+      gfx.limb(c, -5, -14, -9, -9, 3, GA.d);
+      gfx.limb(c, -9, -9, -6, -5, 2.2, GA.d);
+      c.fillStyle = GA.horn;
+      c.fillRect(-6, -5, 2, 1);
+      c.fillRect(-7, -4, 1, 1.2);
+      // torso
+      gfx.ellipse(c, 0, -17.5, 8.5, 5.4, -0.15, GA.m);
+      gfx.ellipse(c, 2, -15.5, 5.5, 2.8, -0.15, GA.l);
+      gfx.limb(c, -6, -20, 3, -21.5, 1, GA.d);
+      // arms reaching forward, claws spread
+      const reach = mode === 'dive' ? 3 : 0;
+      gfx.limb(c, 5, -16, 9 + reach, -11.5, 2.6, GA.m);
+      gfx.limb(c, 9 + reach, -11.5, 13 + reach * 1.5, -10, 2.1, GA.m);
+      c.fillStyle = GA.horn;
+      c.fillRect(13 + reach * 1.5, -11.5, 2, 1);
+      c.fillRect(13 + reach * 1.5, -9.5, 2, 1);
+      gargHead(c, 10, -22.5, true, mode === 'dive');
+      // near wing (in front)
+      c.save();
+      c.translate(1, -20);
+      gargWing(c, wingA, [GA.m, GA.d, GA.l], 1);
+      c.restore();
+    });
+  }
+  def('gargoyle', {
+    name: N('Gargoyle', 'Gárgola'),
+    desc: N('Carved to frighten pilgrims, it learned to enjoy the work. It waits on its plinth for hours, then falls on its prey like a stone.', 'Tallada para asustar a los peregrinos, aprendió a disfrutar del oficio. Espera horas en su pedestal y luego cae sobre su presa como una piedra.'),
+    area: 'gallery', hp: 55, atk: 24, def: 4, exp: 20, w: 20, h: 22, gold: [15, 60],
+    el: 'hit', resist: ['cut'], weak: ['hit'], armored: true, noBlood: true, blood: '#b8b4a8', hitSfx: 'hit_metal',
+    drops: [{ id: 'holy_salt', p: 0.04 }, { id: 'garnet_ring', p: 0.01 }],
+    previewState: 'fly',
+    init(e) {
+      e.setState('perch');
+      e.flying = false;
+      e.dives = 0;
+      e.tx = 0;
+      e.ty = 0;
+    },
+    onHit(e) {
+      if (e.state === 'perch') e.setState('wake');
+    },
+    ai(e, g) {
+      const st = e.state, p = e.player;
+      if (st === 'perch') {
+        e.vx = 0;
+        if (Math.abs(e.dxp()) < 112 && e.dyp() > -60 && e.dyp() < 170 && e.seesPlayer(220)) e.setState('wake');
+      } else if (st === 'wake') {
+        e.vx = 0;
+        if (e.stT === 1) sfx('stomp', 0.4, 1.5);
+        if (e.stT % 5 === 0) G.fx.debris(e.cx + U.rnd(-8, 8), e.y + U.rnd(0, 10), '#87837b', 2);
+        if (e.stT === 14) sfx('roar', 0.35, 1.7);
+        if (e.stT >= 30) {
+          e.face();
+          e.flying = true;
+          e.vy = -2.4;
+          e.setState('rise');
+          sfx('bat_flap', 0.5, 0.6);
+        }
+      } else if (st === 'rise') {
+        // climb above the player, offset to the side we came from
+        const side = e.cx < p.cx ? -1 : 1;
+        const tx = p.cx + side * 56, ty = p.cy - 82;
+        e.vx = U.approach(e.vx, U.clamp((tx - e.cx) * 0.05, -1.8, 1.8), 0.12);
+        e.vy = U.approach(e.vy, U.clamp((ty - e.cy) * 0.05, -1.8, 1.4), 0.12);
+        e.face();
+        if (e.stT % 16 === 0) sfx('bat_flap', 0.3, 0.7);
+        if ((e.stT > 40 && Math.abs(ty - e.cy) < 14) || e.stT > 110 || (e.hitCeil && e.stT > 20)) e.setState('aim');
+      } else if (st === 'aim') {
+        e.vx *= 0.85;
+        e.vy = Math.sin(e.stT * 0.4) * 0.3;
+        e.face();
+        if (e.stT === 1) sfx('bat_screech', 0.45, 0.55);
+        if (e.stT >= 20) {
+          const a = Math.atan2(p.cy - e.cy, p.cx - e.cx);
+          const sp = 4.4;
+          e.lv = [Math.cos(a) * sp, Math.sin(a) * sp];
+          e.ty = p.cy;
+          e.setState('dive');
+        }
+      } else if (st === 'dive') {
+        e.vx = e.lv[0];
+        e.vy = e.lv[1];
+        if (e.stT % 3 === 0) G.fx.particle(e.cx, e.cy, 0, 0, '#8a867c', 14, { size: 2 });
+        if (e.onGround || e.hitWall || e.hitCeil || e.stT > 60 || (e.lv[1] > 0 && e.cy > e.ty + 30)) {
+          if (e.onGround) {
+            G.fx.dust(e.cx, e.fy, 6);
+            G.gfx.shake(2, 8);
+            sfx('stomp', 0.5, 1.1);
+          }
+          e.dives++;
+          e.setState('pull');
+        }
+      } else if (st === 'pull') {
+        e.vx *= 0.88;
+        e.vy = U.approach(e.vy, -1.2, 0.15);
+        if (e.stT >= 18) e.setState('rise');
+      }
+      e.move();
+      if (e.flying && e.onGround) e.vy = Math.min(e.vy, 0);
+    },
+    draw(e, ctx, sx, sy) {
+      const st = e.state;
+      if (st === 'perch' || st === 'wake') {
+        const shake = st === 'wake' && e.stT % 4 < 2 ? (e.stT % 8 < 4 ? 1 : -1) : 0;
+        e.blit(ctx, gargImg('perch', 0, st === 'wake' && e.stT > 8), sx + shake, sy, 28, 46, e.facing < 0);
+        if (st === 'wake' && e.stT > 8) G.gfx.addLight(sx + e.facing * 9, sy - 23, 22, '#ff6020', 0.6);
+        return;
+      }
+      const mode = st === 'dive' ? 'dive' : 'fly';
+      const f = st === 'aim' ? 0 : Math.floor(e.t / (st === 'pull' ? 3 : 5)) % 4;
+      e.blit(ctx, gargImg(mode, mode === 'dive' ? 0 : f, true), sx, sy + 3, 28, 46, e.facing < 0);
+      if (!e.preview) G.gfx.addLight(sx + e.facing * 10, sy - 20, 20, '#ff6020', 0.5);
+      if (st === 'aim' && e.stT > 8) glow(ctx, sx + e.facing * 13, sy - 21, 2, '#ffd060', 0.9);
+    },
+  });
+
+  // ================================================================== SPEAR GUARD (gallery)
+  const SG = {
+    s1: '#e6eaf2', s2: '#a9b1c2', s3: '#6c7488', s4: '#3a4052', b1: '#6c8ce2', b2: '#3a5ab2', b3: '#22367e',
+    au: '#e4b84c', auD: '#8a6420', wood: '#8e5e30', woodD: '#5a3a1a', eye: '#ff4848',
+  };
+  const SG_PAL = Object.values(SG);
+  // spear placement per pose: [butt x, tip x, y]
+  const SG_SPEAR = { walk: [-22, 30, -31], windup: [-38, 13, -30], thrust: [-4, 52, -28] };
+  function spearGuardImg(pose, f) {
+    return spr('spguard_' + pose + f, 104, 56, SG_PAL, (c) => {
+      c.translate(40, 54);
+      const ph = (f / 4) * Math.PI * 2;
+      const step = pose === 'walk' ? Math.sin(ph) : 0;
+      const bob = pose === 'walk' ? Math.abs(Math.cos(ph)) * 0.8 : pose === 'thrust' ? 1 : 0;
+      const lean = pose === 'thrust' ? 3 : pose === 'windup' ? -1.5 : 0;
+      // legs (greaves + sabatons)
+      const legs = pose === 'thrust' ? [[5, -3], [-6, 2]] : pose === 'windup' ? [[3, 0], [-4, 1]] : [[step * 4, 0], [-step * 4, 0]];
+      const drawLeg = (dx, kx, cA, cB) => {
+        gfx.limb(c, 0 + kx * 0.3, -18 + bob, dx * 0.6 + kx, -9 + bob, 3.6, cA);
+        gfx.limb(c, dx * 0.6 + kx, -9 + bob, dx, -2, 3.2, cA);
+        gfx.limb(c, dx * 0.6 + kx + 0.8, -9.5 + bob, dx + 0.6, -3, 1, cB);
+        gfx.poly(c, [dx - 2, -3, dx + 3, -2.6, dx + 4.6, 0.4, dx - 2.2, 0.4], SG.s3);
+      };
+      drawLeg(legs[1][0], legs[1][1] * 0.4, SG.s3, SG.s2);
+      // tabard skirt
+      gfx.poly(c, [-5 + lean * 0.4, -19 + bob, 5 + lean * 0.4, -19 + bob, 6, -8 + bob, 0.5, -10 + bob, -5, -8 + bob], SG.b2);
+      gfx.poly(c, [-5 + lean * 0.4, -19 + bob, -1.5 + lean * 0.4, -19 + bob, -2, -9 + bob, -5, -8 + bob], SG.b3);
+      gfx.limb(c, -5, -8.4 + bob, 6, -8.4 + bob, 1.2, SG.au);
+      drawLeg(legs[0][0], legs[0][1] * 0.4, SG.s2, SG.s1);
+      // torso: breastplate under the tabard
+      c.save();
+      c.translate(lean * 0.6, bob);
+      gfx.poly(c, [-5.5, -19, 5.5, -19, 6.5, -30, -5, -31], SG.s2);
+      gfx.poly(c, [-4.5, -19, 4.8, -19, 5.4, -29, -3.8, -29.6], SG.b2);
+      gfx.poly(c, [-4.5, -19, -1, -19, -1.2, -29.4, -3.8, -29.6], SG.b3);
+      // gold tower emblem on the tabard
+      c.fillStyle = SG.au;
+      c.fillRect(1, -27, 3, 5);
+      c.fillRect(0.5, -28, 1, 1);
+      c.fillRect(2, -28, 1, 1);
+      c.fillRect(3.5, -28, 1, 1);
+      c.fillStyle = SG.auD;
+      c.fillRect(2, -24, 1, 2);
+      // belt
+      gfx.limb(c, -5.2, -19.2, 5.6, -19.2, 1.6, SG.woodD);
+      c.fillStyle = SG.au;
+      c.fillRect(2, -20, 2, 1.6);
+      // far arm + kite shield (lowered and pulled aside while thrusting)
+      const sh = pose === 'thrust' ? [3, -12] : pose === 'windup' ? [8, -21] : [9, -22];
+      gfx.limb(c, 2, -28, sh[0] - 2, sh[1] + 1, 2.6, SG.s3);
+      c.save();
+      c.translate(sh[0], sh[1]);
+      if (pose === 'thrust') c.rotate(0.5);
+      gfx.poly(c, [-3.5, -10, 3.5, -10.5, 4, 1, 0.2, 9, -3.6, 1], SG.s3);
+      gfx.poly(c, [-2.6, -9, 2.6, -9.4, 3, 0.6, 0.2, 7.4, -2.7, 0.6], SG.b2);
+      gfx.poly(c, [0.6, -9.2, 2.6, -9.4, 3, 0.6, 0.6, 6.5], SG.b1);
+      c.fillStyle = SG.au;
+      c.fillRect(-0.4, -7.5, 1.4, 11);
+      c.fillRect(-2.4, -4.5, 5.2, 1.4);
+      c.restore();
+      // pauldron + helmet
+      gfx.ellipse(c, -1, -30, 4.6, 3.2, -0.2, SG.s2);
+      gfx.ellipse(c, -0.4, -31, 3.2, 1.8, -0.2, SG.s1);
+      gfx.limb(c, -4.5, -29, 2.5, -27, 0.9, SG.s3);
+      // plume
+      gfx.poly(c, [-1, -41, -6, -42, -11, -38, -9, -37, -12, -34, -6, -37, -2, -38], SG.b2);
+      gfx.poly(c, [-1, -41, -6, -42, -9, -39.5, -5, -40], SG.b1);
+      // bascinet with a pointed visor
+      gfx.ellipse(c, 0.4, -36, 4.6, 5, 0, SG.s2);
+      gfx.poly(c, [0, -40.5, 3.5, -39, 7, -35.5, 3.5, -32.2, 0, -32], SG.s1);
+      gfx.poly(c, [-4, -36, -1, -36, -1.5, -31.5, -4.4, -32.2], SG.s3);
+      c.fillStyle = SG.s4;
+      c.fillRect(1, -36.8, 5, 1.2);
+      c.fillStyle = SG.eye;
+      c.fillRect(4, -36.8, 1, 1);
+      c.fillStyle = SG.s3;
+      c.fillRect(3, -34, 1, 1);
+      c.fillRect(5, -34.6, 1, 1);
+      gfx.limb(c, -4, -31.4, 4, -31.4, 1.2, SG.s3);
+      c.restore();
+      // the spear (near arm holds it over the shield)
+      const sp = SG_SPEAR[pose];
+      const y = sp[2] + bob;
+      gfx.limb(c, sp[0], y, sp[1] - 5, y, 1.8, SG.wood);
+      gfx.limb(c, sp[0], y + 0.6, sp[1] - 5, y + 0.6, 0.8, SG.woodD);
+      gfx.poly(c, [sp[1] - 6, y - 2, sp[1] - 2, y - 1.6, sp[1] + 2, y, sp[1] - 2, y + 1.6, sp[1] - 6, y + 2], SG.s2);
+      gfx.poly(c, [sp[1] - 6, y - 2, sp[1] - 2, y - 1.6, sp[1] + 2, y, sp[1] - 6, y], SG.s1);
+      gfx.limb(c, sp[1] - 7, y - 2.6, sp[1] - 7, y + 2.6, 1.2, SG.au);
+      // blue pennant behind the spearhead
+      if (pose !== 'thrust') gfx.poly(c, [sp[1] - 9, y - 1, sp[1] - 16, y - 1, sp[1] - 14, y + 2, sp[1] - 17, y + 4.5, sp[1] - 10, y + 2], SG.b2);
+      gfx.limb(c, sp[0] - 0.5, y, sp[0] + 1.5, y, 2.4, SG.s3);
+      // near arm gripping the shaft
+      const hx = pose === 'thrust' ? 16 : pose === 'windup' ? -6 : 6;
+      gfx.limb(c, -1 + lean * 0.6, -29 + bob, (hx - 1) * 0.5, y + 4, 3, SG.s2);
+      gfx.limb(c, (hx - 1) * 0.5, y + 4, hx, y + 0.5, 2.6, SG.s2);
+      gfx.circle(c, hx, y + 0.5, 1.8, SG.s3);
+    });
+  }
+  def('spear_guard', {
+    name: N('Spear Guard', 'Guardia lancero'),
+    desc: N('An empty suit of the old castle guard, still walking its rounds. Its shield never wavers; strike its back, or when it lunges.', 'Una armadura vacía de la antigua guardia que aún hace su ronda. Su escudo nunca vacila: golpéala por la espalda o cuando embiste.'),
+    area: 'gallery', hp: 70, atk: 26, def: 6, exp: 26, w: 16, h: 40, gold: [20, 80],
+    el: 'cut', armored: true, noBlood: true, blood: '#cfd6e6', stunTime: 6,
+    drops: [{ id: 'potion', p: 0.06 }, { id: 'iron_shield', p: 0.015 }],
+    init(e) {
+      e.setState('walk');
+      e.cool = 50;
+      e.turnT = 0;
+    },
+    // the kite shield turns frontal blows: ¼ damage, unless he is thrusting
+    onHitCheck(e, hit, g) {
+      const guarding = e.state === 'walk' || (e.state === 'windup' && e.stT < 12);
+      if (!guarding) return true;
+      const fromX = hit.item ? g.player.cx : hit.w != null ? hit.x + hit.w / 2 : g.player.cx;
+      if ((fromX - e.cx) * e.facing <= 0) return true;
+      hit.dmg = Math.max(1, (hit.dmg - e.defn / 2) * 0.25 + e.defn / 2);
+      hit.noCrit = true;
+      sfx('block', 0.7, 0.9);
+      G.fx.spark(e.cx + e.facing * 10, e.y + 18, '#ffffff', 6);
+      return true;
+    },
+    ai(e, g) {
+      const st = e.state;
+      if (st === 'walk') {
+        const d = e.dxp();
+        // slow to turn around: jump over him and strike his back
+        if (d * e.facing < 0 && Math.abs(d) > 6) {
+          if (++e.turnT > 30) {
+            e.facing *= -1;
+            e.turnT = 0;
+            sfx('hit_metal', 0.25, 0.7);
+          }
+        } else e.turnT = 0;
+        const want = Math.abs(d) > 44 && d * e.facing > 0;
+        e.vx = want && canStep(e, g, e.facing) ? e.facing * 0.45 : 0;
+        if (e.vx && e.t % 24 === 0) sfx('hit_metal', 0.12, 0.6);
+        if (e.cool > 0) e.cool--;
+        else if (Math.abs(d) < 74 && d * e.facing > 0 && Math.abs(e.dyp()) < 30) e.setState('windup');
+      } else if (st === 'windup') {
+        e.vx = 0;
+        if (e.stT === 1) sfx('hit_metal', 0.4, 1.5);
+        if (e.stT === 8) G.fx.spark(e.cx + e.facing * -2, e.y + 10, '#ffffff', 4);
+        if (e.stT >= 20) {
+          e.setState('thrust');
+          sfx('swing_heavy', 0.7, 1.1);
+        }
+      } else if (st === 'thrust') {
+        e.vx = e.stT < 6 && canStep(e, g, e.facing) ? e.facing * 1.4 : 0;
+        if (e.stT <= 12) strike(e, e.facing > 0 ? e.cx + 6 : e.cx - 54, e.y + 9, 48, 7);
+        if (e.stT >= 14) e.setState('recover');
+      } else if (st === 'recover') {
+        e.vx = 0;
+        if (e.stT >= 26) {
+          e.setState('walk');
+          e.cool = 70 + e.rnd.int(0, 40);
+        }
+      }
+      e.move();
+    },
+    draw(e, ctx, sx, sy) {
+      const st = e.state;
+      let pose = 'walk', f = 0;
+      if (st === 'windup') pose = e.stT < 5 ? 'walk' : 'windup';
+      else if (st === 'thrust') pose = 'thrust';
+      else if (st === 'recover') pose = e.stT < 14 ? 'thrust' : 'windup';
+      else f = Math.abs(e.vx) > 0.05 ? Math.floor(e.t / 10) % 4 : 0;
+      e.blit(ctx, spearGuardImg(pose, f), sx, sy, 40, 54, e.facing < 0);
+      if (st === 'windup' && e.stT > 6) glow(ctx, sx + e.facing * 13, sy - 30, 1 + (e.stT % 3), '#ffffff', 0.8);
+    },
+  });
+
   // @@ENEMIES-END@@ (new enemies are inserted above this line)
 
   // Debug overlay (G.DEBUG_HITBOX = true): hurtbox in green, attack boxes in red.
