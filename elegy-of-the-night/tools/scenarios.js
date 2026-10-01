@@ -341,3 +341,46 @@ module.exports.mapfull = async function ({ shot, key, wait, ev }) {
   await wait(400);
   await shot('archives');
 };
+
+// savecycle: save in a save room through the in-game panel, reload the page, continue
+module.exports.savecycle = async function ({ shot, key, wait, ev, page }) {
+  await ev(() => {
+    const G = window.G;
+    G.audio.unlock();
+    const s = G.newState();
+    s.room = 'ent_save';
+    s.gold = 1234;
+    G.continueGame(s);
+    G.ui.closeAll();
+  });
+  await wait(500);
+  // walk onto the save crystal and press up
+  const sp = await ev(() => {
+    const G = window.G, e = G.game.ents.find((e) => e.sp && e.sp.t === 'save');
+    if (!e) return null;
+    G.game.player.x = e.cx - G.game.player.w / 2;
+    return [e.cx, G.game.player.cx];
+  });
+  console.log('save crystal', JSON.stringify(sp));
+  await wait(300);
+  await key('ArrowUp', 120);
+  await wait(800);
+  await shot('panel');
+  // confirm the first file (and an overwrite question if any)
+  for (let i = 0; i < 3; i++) {
+    await key('KeyZ', 60);
+    await wait(500);
+  }
+  await shot('saved');
+  const before = await ev(() => window.G.save.listMeta());
+  console.log('meta before reload', JSON.stringify(before && before[0]));
+  await page.reload();
+  await wait(1200);
+  const after = await ev(async () => {
+    const G = window.G;
+    const m = await G.save.listMeta();
+    const st = await G.save.read(1);
+    return { meta: m[0], room: st && st.room, gold: st && st.gold, backend: G.save.backend };
+  });
+  console.log('after reload', JSON.stringify(after));
+};
