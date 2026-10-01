@@ -142,7 +142,8 @@
   });
 
   // E8 — cellar with a low tunnel only a wolf can pass (to the Caverns)
-  R({ id: 'ent_cellar', area: 'entrance', x: 11, y: 20, w: 3, h: 1, darkness: 0.35 }, (b) => {
+  // R0 is the wolf tunnel into the Caverns (lvl 2)
+  R({ id: 'ent_cellar', area: 'entrance', x: 11, y: 20, w: 3, h: 1, darkness: 0.35, gates: { R0: 2 } }, (b) => {
     b.shell();
     b.door('L', 0);
     b.door('R', 0);

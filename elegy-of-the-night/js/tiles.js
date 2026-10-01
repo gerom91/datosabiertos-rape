@@ -47,8 +47,8 @@
       darkness: 0.15, tint: '#06040a', candle: 'lantern', decor: ['gear', 'clockface', 'window', 'pendulum', 'gear'],
     },
     catacombs: {
-      solid: 'bone', top: 'none', wall: 'skulls', far: 'none',
-      c: { base: '#3a2e24', dark: '#1c1610', light: '#5e4c3a', mortar: '#0e0a08', accent: '#d8cdb0', accent2: '#f0e8d0', wall: '#181210', wall2: '#100c0a', trim: '#6a5a44' },
+      solid: 'bone', top: 'bone', wall: 'skulls', far: 'none',
+      c: { base: '#4a3a2c', dark: '#1c1610', light: '#6e5a44', mortar: '#0e0a08', accent: '#d8cdb0', accent2: '#f0e8d0', wall: '#140f0c', wall2: '#0c0907', trim: '#6a5a44' },
       darkness: 0.62, tint: '#060402', decor: ['niche', 'torch', 'bonepile', 'chain'],
     },
     chapel: {
@@ -211,6 +211,12 @@
             px(ctx, x, y, 16, 1, c.accent2);
             px(ctx, x, y + 1, 16, 1, c.accent);
             if (rng.next() < 0.3) px(ctx, x + rng.int(2, 13), y + 2, 1, 2, c.accent);
+            break;
+          case 'bone':
+            px(ctx, x, y, 16, 2, U.shade(c.accent, -0.15));
+            px(ctx, x, y, 16, 1, c.accent2);
+            px(ctx, x, y + 2, 16, 1, U.shade(c.base, -0.5));
+            if (rng.next() < 0.4) px(ctx, x + rng.int(1, 12), y + 2, 3, 1, U.shade(c.accent, -0.35));
             break;
           case 'brass':
             px(ctx, x, y, 16, 3, c.accent);
@@ -384,9 +390,10 @@
       }
       case 'skulls': {
         px(ctx, 0, 0, W, H, c.wall);
+        // recessed ossuary wall: dim skulls so the bone-lined rock in front stays readable
         for (let y = 2; y < H; y += 9)
           for (let x = (y % 18 ? 0 : 5); x < W; x += 10)
-            if (rng.next() < 0.85) skull(ctx, x, y, U.shade(c.accent, -0.55 + rng.next() * 0.1), c.wall2);
+            if (rng.next() < 0.7) skull(ctx, x, y, U.shade(c.accent, -0.74 + rng.next() * 0.08), c.wall2);
         break;
       }
       case 'curtain': {

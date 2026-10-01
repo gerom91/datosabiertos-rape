@@ -885,11 +885,6 @@
   });
 
   // ======================== UNDERGROUND CAVERNS ========================
-  // ent_cellar (rooms_castle.js) reaches the Caverns through a 1-tile wolf
-  // tunnel: its R0 door needs the wolf (lvl 2) — tell the validator.
-  const cellar = G.world.rooms.ent_cellar;
-  if (cellar) cellar.gates = Object.assign({ R0: 2 }, cellar.gates || {});
-
   // C1 — the descent: the cellar's wolf tunnel opens high in a cave shaft that
   // winds down to a drop into the lake (B0) and a passage to the falls (R2).
   R({

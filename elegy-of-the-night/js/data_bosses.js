@@ -225,7 +225,10 @@
   const awake = (e) => e.started && G.game.boss === e;
   // wake up only once the player is close AND the boss is well inside the camera view,
   // so the intro scene is always staged with the boss on screen
-  const wakeSeen = (dist) => (e) => Math.abs(e.dxp()) < dist && Math.abs(e.dyp()) < 260 && e.onScreen(-24);
+  const wakeSeen = (dist) => (e, g) => {
+    const sx = e.cx - g.camx;
+    return Math.abs(e.dxp()) < dist && Math.abs(e.dyp()) < 260 && sx > 70 && sx < G.W - 70 && e.onScreen(0);
+  };
 
   // ---- small drawing helpers ----------------------------------------------------------------
   function glow(ctx, x, y, r, col, a) {
