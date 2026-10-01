@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audio Test Bench</title>
+<style>
+  :root {
+    --bg: #14111a; --panel: #1e1926; --ink: #e9e2f2; --muted: #a497b6; --line: #352c43;
+    --accent: #b0283a; --accent-ink: #fff; --chip: #2a2234; --chip-hover: #3a2f48; --ok: #6fbf73; --warn: #e0a84a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f6f2ea; --panel: #fffdf8; --ink: #2a2230; --muted: #6d6177; --line: #e2d9cc;
+      --accent: #9b1d2e; --accent-ink: #fff; --chip: #efe7da; --chip-hover: #e4d8c6; --ok: #2f7d34; --warn: #a86a08;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font: 600 22px/1.2 Georgia, "Times New Roman", serif; margin: 0 0 4px; letter-spacing: .02em; }
+  h2 { font: 600 15px/1.2 system-ui, sans-serif; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  p.sub { margin: 0 0 18px; color: var(--muted); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button { font: inherit; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+  button:hover { background: var(--chip-hover); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
+  button.on { outline: 2px solid var(--accent); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+  .grid button { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .grid button small { display: block; color: var(--muted); font-size: 11px; }
+  label.vol { display: flex; gap: 8px; align-items: center; min-width: 220px; }
+  label.vol span { width: 52px; color: var(--muted); }
+  input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+  input[type=text] { font: inherit; flex: 1; min-width: 0; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  #status { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--muted); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; background: var(--chip); font-size: 12px; }
+  .badge.ok { color: var(--ok); } .badge.warn { color: var(--warn); }
+  pre#log { margin: 0; max-height: 220px; overflow: auto; font-size: 12px; white-space: pre-wrap; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Elegy of the Night: Audio Test Bench</h1>
+  <p class="sub">Synthesized music, sound effects and TTS voices (no audio files). Click "Unlock audio" first.</p>
+
+  <section>
+    <div class="row">
+      <button class="primary" id="unlock">Unlock audio</button>
+      <button id="stop">Stop music</button>
+      <button id="duck">Duck: off</button>
+      <span class="badge" id="unlockState">locked</span>
+      <span class="badge" id="ttsState">TTS: ?</span>
+      <span id="status"></span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Volume</h2>
+    <div class="row" id="vols"></div>
+  </section>
+
+  <section>
+    <h2>Music</h2>
+    <div class="grid" id="music"></div>
+  </section>
+
+  <section>
+    <h2>Sound effects</h2>
+    <div class="row" style="margin-bottom:8px">
+      <label class="vol"><span>pitch</span><input type="range" id="pitch" min="0.5" max="1.5" step="0.05" value="1"></label>
+      <label class="vol"><span>pan</span><input type="range" id="pan" min="-1" max="1" step="0.1" value="0"></label>
+      <button id="burst">Burst test (20 hits/s for 1 s)</button>
+    </div>
+    <div class="grid" id="sfx"></div>
+  </section>
+
+  <section>
+    <h2>Voices</h2>
+    <div class="row" style="margin-bottom:8px">
+      <input type="text" id="line" value="The archives remember every hunter who ever fell in this castle.">
+      <button id="hush">Stop speech</button>
+      <label><input type="checkbox" id="voiceOn" checked> voice enabled</label>
+    </div>
+    <div class="grid" id="speakers"></div>
+  </section>
+
+  <section>
+    <h2>Diagnostics</h2>
+    <div class="row" style="margin-bottom:8px"><button id="validate">Validate music data</button><button id="render">Offline render current track (8 s)</button></div>
+    <pre id="log"></pre>
+  </section>
+</main>
+<script src="../js/music.js"></script>
+<script src="../js/audio.js"></script>
+<script>
+(function () {
+  'use strict';
+  var A = window.G && window.G.audio;
+  var $ = function (id) { return document.getElementById(id); };
+  function log(s) { var el = $('log'); el.textContent = s + '\n' + el.textContent; }
+  if (!A) { log('G.audio missing'); return; }
+
+  function refresh() {
+    $('unlockState').textContent = A.isUnlocked() ? 'unlocked' : 'locked';
+    $('unlockState').className = 'badge ' + (A.isUnlocked() ? 'ok' : 'warn');
+    $('ttsState').textContent = 'TTS: ' + (A.speechAvailable() ? 'English voice available' : 'unavailable (timer fallback)');
+    $('ttsState').className = 'badge ' + (A.speechAvailable() ? 'ok' : 'warn');
+    var cm = A.currentMusic();
+    $('status').textContent = 'now playing: ' + (cm ? cm + ' (' + A.trackName(cm) + ')' : '-');
+    var btns = document.querySelectorAll('#music button');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('on', btns[i].dataset.id === cm);
+  }
+
+  $('unlock').onclick = function () { A.unlock(); refresh(); };
+  $('stop').onclick = function () { A.stopMusic(1); refresh(); };
+  var ducked = false;
+  $('duck').onclick = function () { ducked = !ducked; A.duck(ducked); this.textContent = 'Duck: ' + (ducked ? 'on' : 'off'); };
+
+  ['master', 'music', 'sfx', 'voice'].forEach(function (k) {
+    var lab = document.createElement('label'); lab.className = 'vol';
+    lab.innerHTML = '<span>' + k + '</span>';
+    var r = document.createElement('input'); r.type = 'range'; r.min = 0; r.max = 1; r.step = 0.01; r.value = A.getVolume(k);
+    r.id = 'vol-' + k;
+    r.oninput = function () { A.setVolume(k, +r.value); };
+    lab.appendChild(r); $('vols').appendChild(lab);
+  });
+
+  A.listMusic().forEach(function (id) {
+    var b = document.createElement('button'); b.dataset.id = id;
+    b.innerHTML = id + '<small>' + A.trackName(id) + '</small>';
+    b.onclick = function () { A.unlock(); A.playMusic(id, { fade: 1 }); refresh(); };
+    $('music').appendChild(b);
+  });
+
+  A.listSfx().forEach(function (name) {
+    var b = document.createElement('button'); b.textContent = name; b.dataset.id = name;
+    b.onclick = function () { A.unlock(); A.sfx(name, { pitch: +$('pitch').value, pan: +$('pan').value }); };
+    $('sfx').appendChild(b);
+  });
+  $('burst').onclick = function () {
+    A.unlock();
+    var n = 0, names = ['hit_flesh', 'swing_light', 'hit_bone', 'hit_metal'];
+    var iv = setInterval(function () {
+      A.sfx(names[n % names.length], { pitch: 0.9 + Math.random() * 0.2, pan: Math.random() * 2 - 1 });
+      if (++n >= 20) clearInterval(iv);
+    }, 50);
+  };
+
+  var lines = {
+    alucard: 'I am the son of the one you fear. Stand aside.',
+    maria: 'Alucard! Wait for me, I can help you find Richter!',
+    richter: 'The Belmont name still carries weight in these halls.',
+    librarian: 'Ah, a customer. Mind the dust; these books are older than your grudges.',
+    scrivener: 'Every hunter who ever lived is written in my ink. Soon, so are you.',
+    echo: 'We are what remains of the hunters. Remember us.',
+    narrator: 'In the year of the crimson moon, the castle rose again from the mist.',
+    shout: 'Hellfire!'
+  };
+  A.speakers().forEach(function (sp) {
+    var b = document.createElement('button');
+    b.innerHTML = sp + '<small>' + (lines[sp] || '') + '</small>';
+    b.onclick = function () {
+      A.unlock(); A.duck(true);
+      var t0 = performance.now();
+      A.say(lines[sp] || $('line').value, { speaker: sp,
+        onstart: function () { log(sp + ': start'); },
+        onend: function () { A.duck(false); log(sp + ': end after ' + Math.round(performance.now() - t0) + ' ms'); } });
+    };
+    b.ondblclick = function () { A.say($('line').value, { speaker: sp }); };
+    $('speakers').appendChild(b);
+  });
+  $('hush').onclick = function () { A.stopSpeech(); A.duck(false); };
+  $('voiceOn').onchange = function () { A.setVoiceEnabled(this.checked); };
+
+  $('validate').onclick = function () {
+    var w = window.G.musicData.validate();
+    log(w.length ? 'validate: ' + w.length + ' warning(s)\n' + w.join('\n') : 'validate: OK (no warnings)');
+  };
+  $('render').onclick = function () {
+    var id = A.currentMusic() || 'title';
+    A._renderOffline('music', id, 8).then(function (r) { log(id + ': peak ' + r.peak.toFixed(3) + ' rms ' + r.rms.toFixed(4)); },
+      function (e) { log('render failed: ' + e); });
+  };
+  try { if (window.speechSynthesis) window.speechSynthesis.addEventListener('voiceschanged', refresh); } catch (e) { /* ignore */ }
+  setInterval(refresh, 1000);
+  refresh();
+})();
+</script>
+</body>
+</html>
