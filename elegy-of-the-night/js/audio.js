@@ -627,7 +627,7 @@
       }
       for (var i = fading.length - 1; i >= 0; i--) {
         var p = fading[i];
-        if (t >= p.stopAt + 3.5) { p.dispose(); fading.splice(i, 1); }
+        if (t >= p.stopAt + 0.25) { p.dispose(); fading.splice(i, 1); } // silent by now: free its voices
         else p.tick(t, ahead);
       }
     } catch (e) { warnOnce('tick', 'scheduler error: ' + (e && e.message)); }
@@ -873,7 +873,10 @@
     }
     var safety = Math.max(1200, 55 * str.length / spk.rate) * 2 + 2000;
     h.timers.push(setTimeout(function () { if (!h.done) { silenceTts(); finish(); } }, safety));
-    try { if (synth.paused) synth.resume(); } catch (e) { /* ignore */ }
+    try { // clear a stuck/foreign queue first (Chrome can wedge after long idle)
+      if (synth.speaking || synth.pending) { synth.cancel(); lastCancel = nowMs(); }
+      if (synth.paused) synth.resume();
+    } catch (e) { /* ignore */ }
     if (nowMs() - lastCancel < 100) h.timers.push(setTimeout(next, 60)); // Chrome drops speak() right after cancel()
     else next();
     return handle;
@@ -975,6 +978,7 @@
   }
   G.audio = {
     __elegy: true,
+    _real: true, // tells js/audio_stub.js (if loaded later) not to replace this engine
     unlock: guard(unlock, false),
     isUnlocked: guard(function () { return !!(ctx && unlocked); }, false),
     setVolume: guard(setVolume),

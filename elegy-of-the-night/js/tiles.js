@@ -463,15 +463,18 @@
       px(ctx, x - 3, y + h, w + 6, 1, U.shade(th.c.light, 0.3));
       out.push({ x: x + w / 2, y: y + 30, r: 60, color: '#8aa0ff', i: 0.5, moon: true });
     },
-    pillar(ctx, x, y, th, rng, out, room) {
-      const h = G.CELL_PX_H - y - 32;
+    pillar(ctx, x, y, th, rng, out, room, floor) {
+      // spans from y (ceiling) down to `floor` (absolute px); defaults to the cell's floor band
+      const fl = floor != null ? floor : G.CELL_PX_H - 32;
+      const h = fl - y - 8 + 4;
+      if (h < 24) return;
       const c = th.c;
       px(ctx, x, y + 8, 14, h, U.shade(c.base, -0.25));
       px(ctx, x + 2, y + 8, 3, h, U.shade(c.base, -0.1));
       px(ctx, x + 10, y + 8, 2, h, U.shade(c.base, -0.45));
       px(ctx, x - 3, y, 20, 8, U.shade(c.base, -0.15));
       px(ctx, x - 3, y, 20, 2, U.shade(c.light, -0.1));
-      px(ctx, x - 3, y + 8 + h - 6, 20, 6, U.shade(c.base, -0.2));
+      px(ctx, x - 3, y + 8 + h - 10, 20, 6, U.shade(c.base, -0.2));
     },
     torch(ctx, x, y, th, rng, out) {
       px(ctx, x + 2, y + 8, 4, 10, '#3a2a1a');
@@ -520,8 +523,9 @@
       px(ctx, x + 13, b - 52, 3, 18, c.base);
       px(ctx, x + 3, b - 47, 2, 30, c.light);
     },
-    chandelier(ctx, x, y, th, rng, out) {
-      px(ctx, x + 11, 0, 2, y + 6, '#3a3a3a');
+    chandelier(ctx, x, y, th, rng, out, room, top) {
+      const t0 = top != null ? top : Math.floor(y / G.CELL_PX_H) * G.CELL_PX_H;
+      px(ctx, x + 11, t0, 2, y + 6 - t0, '#3a3a3a');
       px(ctx, x, y + 6, 24, 3, th.c.trim);
       for (let i = 0; i < 4; i++) {
         px(ctx, x + 1 + i * 7, y + 2, 2, 4, '#f0e8d0');
@@ -529,9 +533,10 @@
       }
       out.push({ x: x + 12, y: y + 2, r: 80, color: '#ffc860', i: 0.8, flicker: true });
     },
-    curtain(ctx, x, y, th) {
-      for (let i = 0; i < 20; i += 4) px(ctx, x + i, 0, 4, 70 - i, i % 8 ? '#6a1018' : '#8a1a24');
-      px(ctx, x - 2, 0, 24, 4, th.c.trim);
+    curtain(ctx, x, y, th, rng, out, room, top) {
+      const t0 = top != null ? top : Math.floor(y / G.CELL_PX_H) * G.CELL_PX_H;
+      for (let i = 0; i < 20; i += 4) px(ctx, x + i, t0, 4, 70 - i, i % 8 ? '#6a1018' : '#8a1a24');
+      px(ctx, x - 2, t0, 24, 4, th.c.trim);
     },
     lamp(ctx, x, y, th, rng, out) {
       px(ctx, x + 3, y + 6, 2, 10, '#3a2a1a');
@@ -539,11 +544,15 @@
       px(ctx, x + 1, y + 1, 6, 5, '#7ad08a');
       out.push({ x: x + 4, y: y + 3, r: 66, color: '#9aff9a', i: 0.75 });
     },
-    ladder(ctx, x, y, th) {
-      const h = G.CELL_PX_H - 32;
-      px(ctx, x, 0, 2, h, th.c.light);
-      px(ctx, x + 12, 0, 2, h, th.c.light);
-      for (let i = 6; i < h; i += 10) px(ctx, x, i, 14, 2, th.c.base);
+    ladder(ctx, x, y, th, rng, out, room, floor) {
+      // leans from y (ceiling) down to `floor` (absolute px)
+      const t0 = floor != null ? y : 0;
+      const fl = floor != null ? floor : G.CELL_PX_H - 32;
+      const h = fl - t0;
+      if (h < 32) return;
+      px(ctx, x, t0, 2, h, th.c.light);
+      px(ctx, x + 12, t0, 2, h, th.c.light);
+      for (let i = 6; i < h; i += 10) px(ctx, x, t0 + i, 14, 2, th.c.base);
     },
     desk(ctx, x, y, th, rng, out) {
       const b = G.CELL_PX_H - 32;
@@ -657,13 +666,14 @@
       ctx.fill();
       px(ctx, x + 3, b - 26, 10, 3, '#efe6d0');
     },
-    stalactite(ctx, x, y, th, rng) {
+    stalactite(ctx, x, y, th, rng, out, room, top) {
       const c = th.c, h = rng.int(16, 46);
+      const t0 = top != null ? top : Math.floor(y / G.CELL_PX_H) * G.CELL_PX_H;
       ctx.fillStyle = U.shade(c.wall, 0.12);
       ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x + 12, 0);
-      ctx.lineTo(x + 6, h);
+      ctx.moveTo(x, t0);
+      ctx.lineTo(x + 12, t0);
+      ctx.lineTo(x + 6, t0 + h);
       ctx.fill();
     },
     crystal(ctx, x, y, th, rng, out) {
@@ -683,8 +693,9 @@
       out.push({ x: x + 7, y: b - 6, r: 40, color: '#60e0ff', i: 0.5 });
     },
     waterfall(ctx, x, y, th, rng) {
+      const t0 = Math.floor(y / G.CELL_PX_H) * G.CELL_PX_H;
       for (let i = 0; i < G.CELL_PX_H; i += 2) {
-        px(ctx, x + Math.round(Math.sin(i * 0.3) * 1), i, 10, 2, i % 6 ? '#3a7a9a' : '#6ab0d0');
+        px(ctx, x + Math.round(Math.sin(i * 0.3) * 1), t0 + i, 10, 2, i % 6 ? '#3a7a9a' : '#6ab0d0');
       }
     },
     gear(ctx, x, y, th, rng) {
@@ -714,10 +725,11 @@
       gfx.limb(ctx, x + 24, y + 24, x + 24, y + 10, 2, '#2a2420');
       gfx.limb(ctx, x + 24, y + 24, x + 34, y + 28, 2, '#2a2420');
     },
-    pendulum(ctx, x, y, th) {
-      px(ctx, x + 5, 0, 2, 90, th.c.accent);
-      gfx.circle(ctx, x + 6, 96, 9, th.c.accent);
-      gfx.circle(ctx, x + 6, 96, 6, U.shade(th.c.accent, 0.3));
+    pendulum(ctx, x, y, th, rng, out, room, top) {
+      const t0 = top != null ? top : Math.floor(y / G.CELL_PX_H) * G.CELL_PX_H;
+      px(ctx, x + 5, t0, 2, 90, th.c.accent);
+      gfx.circle(ctx, x + 6, t0 + 96, 9, th.c.accent);
+      gfx.circle(ctx, x + 6, t0 + 96, 6, U.shade(th.c.accent, 0.3));
     },
     niche(ctx, x, y, th, rng, out) {
       px(ctx, x, y, 22, 26, '#0a0806');
@@ -784,6 +796,39 @@
     return t === T.SOLID || t === T.BREAK || t === T.SPIKES || t === T.SEAL;
   }
 
+  // floor-standing decorations: [left px offset, right px offset, headroom tiles]
+  const FLOOR_DECOR = {
+    statue: [-4, 20, 4], desk: [0, 36, 2], globe: [0, 16, 2], candelabra: [0, 16, 3], scrollrack: [0, 30, 3],
+    lectern: [0, 16, 2], crystal: [0, 14, 1], bonepile: [-12, 18, 1], pew: [0, 40, 2], throne: [-4, 34, 5],
+    pillar: [-3, 17, 3], ladder: [0, 14, 3],
+  };
+  const HANGING_DECOR = { chandelier: 1, curtain: 1, stalactite: 1, pendulum: 1 };
+  // cell-relative row of a floor under columns txA..txB with `head` empty rows above it, or -1
+  function findFloor(room, cy, txA, txB, head) {
+    const base = cy * G.CELL_H;
+    for (let r = head; r < G.CELL_H; r++) {
+      let ok = true;
+      for (let tx = txA; tx <= txB && ok; tx++) {
+        const t = room.get(tx, base + r);
+        if (!(t === T.SOLID || t === T.ONEWAY || t === T.BREAK || t === T.SEAL)) ok = false;
+        for (let h = 1; h <= head && ok; h++) if (room.get(tx, base + r - h) !== T.EMPTY) ok = false;
+      }
+      if (ok) return r;
+    }
+    return -1;
+  }
+  // absolute px y just under the nearest solid ceiling above cell row `fr` (within the cell), or -1
+  function findCeiling(room, cy, txA, txB, fr) {
+    const base = cy * G.CELL_H;
+    for (let r = fr - 1; r >= 0; r--) {
+      for (let tx = txA; tx <= txB; tx++) {
+        const t = room.get(tx, base + r);
+        if (t === T.SOLID || t === T.BREAK || t === T.SEAL) return (base + r + 1) * TS;
+      }
+    }
+    return -1; // open above (a shaft or a door gap): nothing to hang from
+  }
+
   G.renderRoom = function (room) {
     const th = THEMES[room.def.theme || room.area.theme] || THEMES.entrance;
     room.theme = th;
@@ -818,14 +863,25 @@
               if (!fn) continue;
               const x = cx * G.CELL_PX_W + 24 + k * 120 + rng.int(0, 60);
               const y = cy * G.CELL_PX_H + rng.int(28, 60);
-              // skip decorations whose anchor is inside solid rock
-              const tx = Math.floor(x / TS), ty = Math.floor((y + 20) / TS);
-              if (isSolidT(room.get(tx, ty)) || isSolidT(room.get(tx + 1, ty))) continue;
               if (room.def.outdoor && (kind === 'window' || kind === 'painting' || kind === 'portrait')) continue;
-              bctx.save();
-              const dy = cy * G.CELL_PX_H;
-              // decorations that sit on the floor use cell-relative coordinates
-              if (['statue', 'desk', 'globe', 'candelabra', 'scrollrack', 'lectern', 'crystal', 'bonepile', 'pew', 'throne', 'ladder'].includes(kind)) {
+              const span = FLOOR_DECOR[kind];
+              if (span) {
+                // floor-standing: needs real floor under its whole width and headroom above it
+                const fr = findFloor(room, cy, Math.floor((x + span[0]) / TS), Math.floor((x + span[1] - 1) / TS), span[2]);
+                if (fr < 0) continue;
+                const floorY = (cy * G.CELL_H + fr) * TS;
+                if (kind === 'pillar' || kind === 'ladder') {
+                  const top = findCeiling(room, cy, Math.floor((x + span[0]) / TS), Math.floor((x + span[1] - 1) / TS), fr);
+                  if (top < 0) continue;
+                  bctx.save();
+                  fn(bctx, x, top, th, rng, room.lightsStatic, room, floorY);
+                  room.lightsStatic.forEach((L) => (L._fixed = true));
+                  bctx.restore();
+                  continue;
+                }
+                // drawn in cell-relative coordinates with the floor at CELL_PX_H - 32
+                const dy = floorY - (G.CELL_PX_H - 32);
+                bctx.save();
                 bctx.translate(0, dy);
                 fn(bctx, x, 0, th, rng, room.lightsStatic, room);
                 room.lightsStatic.forEach((L) => {
@@ -834,10 +890,21 @@
                     L._fixed = true;
                   }
                 });
-              } else {
-                fn(bctx, x, y, th, rng, room.lightsStatic, room);
-                room.lightsStatic.forEach((L) => (L._fixed = true));
+                bctx.restore();
+                continue;
               }
+              // skip decorations whose anchor is inside solid rock
+              const tx = Math.floor(x / TS), ty = Math.floor((y + 20) / TS);
+              if (isSolidT(room.get(tx, ty)) || isSolidT(room.get(tx + 1, ty))) continue;
+              let top = null;
+              if (HANGING_DECOR[kind]) {
+                // hangs from a ceiling inside this cell
+                top = findCeiling(room, cy, tx, tx, ty - cy * G.CELL_H);
+                if (top < 0) continue;
+              }
+              bctx.save();
+              fn(bctx, x, y, th, rng, room.lightsStatic, room, top);
+              room.lightsStatic.forEach((L) => (L._fixed = true));
               bctx.restore();
             }
           }

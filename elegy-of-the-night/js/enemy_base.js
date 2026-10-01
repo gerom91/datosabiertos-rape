@@ -60,6 +60,9 @@
       this.invuln = 0;
       this.contact = def.touch;
       this.rnd = U.RNG(U.uid() * 977);
+      // a walker placed inside a solid tile would fall through the world: lift it onto the tile
+      if (!this.flying && g && g.room && G.phys && G.phys.rectSolid)
+        for (let i = 0; i < 40 && G.phys.rectSolid(g.room, this.x, this.y, this.w, this.h, this); i++) this.y -= 2;
       this.spawnX = this.x;
       this.spawnY = this.y;
       if (def.init) def.init(this, g);

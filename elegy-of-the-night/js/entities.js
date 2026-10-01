@@ -659,16 +659,23 @@
       this.solidTop = true;
       this.period = sp.period || 240;
       this.phase = sp.phase || 0;
+      // start exactly where the path puts it at t=0, so nothing standing on it is dragged on load
+      this.place(0);
+      this.dx = this.dy = 0;
     }
-    update(g) {
-      this.t++;
-      const k = (Math.sin(((this.t + this.phase) / this.period) * Math.PI * 2) + 1) / 2;
+    place(t) {
+      // eases from the spawn point (k=0) to spawn + (dx,dy) tiles (k=1) and back
+      const k = (1 - Math.cos(((t + this.phase) / this.period) * Math.PI * 2)) / 2;
       const nx = this.x0 + (this.sp.dx || 0) * 16 * k;
       const ny = this.y0 + (this.sp.dy || 0) * 16 * k;
       this.dx = nx - this.x;
       this.dy = ny - this.y;
       this.x = nx;
       this.y = ny;
+    }
+    update(g) {
+      this.t++;
+      this.place(this.t);
     }
     draw(ctx, camx, camy) {
       const x = Math.round(this.x - camx), y = Math.round(this.y - camy);

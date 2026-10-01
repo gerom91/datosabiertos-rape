@@ -221,6 +221,8 @@
     e.invuln = Math.max(e.invuln, 50);
   }
   const wants2 = (e, f) => e.phase === 1 && !e.dying && e.hp <= e.maxHp * (f || 0.5);
+  // a sleeping boss (or one whose intro is still playing) cannot be hurt
+  const awake = (e) => e.started && G.game.boss === e;
 
   // ---- small drawing helpers ----------------------------------------------------------------
   function glow(ctx, x, y, r, col, a) {
@@ -693,6 +695,7 @@
       e.setState('rise');
       sfx('stomp', { vol: 0.8, pitch: 0.6 });
     },
+    onHitCheck: (e) => awake(e),
     onHit: bossOnHit,
     ai(e, g) {
       const A = e.A, pl = e.player;
@@ -1091,8 +1094,10 @@
         e.headX = 0;
         e.jaw = 0;
         e.flare = 0;
-        armTo(e.armL, -104, -7);
-        armTo(e.armR, 96, -7);
+        armTo(e.armL, -104, -84);
+        armTo(e.armR, 98, -84);
+        e.armL.ang = Math.PI * 1.32;
+        e.armR.ang = Math.PI * 1.68;
         colSolve(e, e.armL);
         colSolve(e, e.armR);
         drawColossus(e, ctx, 0, 0, 0, 0);
@@ -1417,6 +1422,7 @@
       e.bat = false;
       e.pose = G.alucardPose ? G.alucardPose('idle', 0) : null;
       dopResetCape(e);
+      installDopTrail(e);
       e.hurtbox = () => (e.bat ? { x: e.cx - 9, y: e.cy - 7, w: 18, h: 14 } : { x: e.x, y: e.y, w: e.w, h: e.h });
     },
     onStart(e, g) {
@@ -1425,6 +1431,7 @@
       e.setState('appear');
       sfx('ink_splash', { vol: 0.8 });
     },
+    onHitCheck: (e) => awake(e),
     onHit(e, hit, g) {
       bossOnHit(e, hit, g);
       if (e.dying) return;
@@ -1439,6 +1446,7 @@
       if (e.hp <= 0 && !e.dying) startDying(e, g);
       if (e.evadeCD > 0) e.evadeCD--;
       if (e.flipT > 0) e.flipT--;
+      if (e.dropT > 0) e.dropT--; // one-way ledges become solid again after a drop
       const dx = pl.cx - e.cx, adx = Math.abs(dx);
       const face = () => (e.facing = dx < 0 ? -1 : 1);
       const go = (s, W) => {
@@ -2427,7 +2435,7 @@
       sfx('whip', { vol: 0.8 });
     },
     onHitCheck(e) {
-      return e.vis > 0.5; // as mist it cannot be touched
+      return awake(e) && e.vis > 0.5; // as mist it cannot be touched
     },
     onHit(e, hit, g) {
       bossOnHit(e, hit, g);
@@ -2715,13 +2723,13 @@
       if (vis <= 0.02) return;
       let img = cv;
       if (e._flashDraw) img = flashCopy(e, cv);
-      const flick = 0.78 + Math.sin(e.t * 0.31) * 0.06 + Math.sin(e.t * 1.7) * 0.03;
+      const flick = 0.86 + Math.sin(e.t * 0.31) * 0.05 + Math.sin(e.t * 1.7) * 0.03;
       ctx.globalAlpha = Math.min(1, vis * flick);
       gfx.drawAnchored(img, sx, sy, EC_AX, EC_AY, e.facing < 0, null, ctx);
       // spectral glow pass
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-      ctx.globalAlpha = 0.22 * vis;
+      ctx.globalAlpha = 0.16 * vis;
       gfx.drawAnchored(img, sx, sy - 1, EC_AX, EC_AY, e.facing < 0, null, ctx);
       ctx.restore();
       ctx.globalAlpha = 1;
@@ -2999,13 +3007,18 @@
             ctx.globalAlpha = a;
             ctx.fillStyle = '#140a14';
             ctx.fillRect(sx - 17, sy + 1, 34, 3);
-            ctx.fillStyle = '#2a1640';
-            ctx.fillRect(sx - 13, sy, 26, 1);
+            // a violet sheen and bubbles so the puddle reads on a dark floor
+            ctx.fillStyle = '#8a5ad0';
+            ctx.fillRect(sx - 15, sy, 30, 1);
+            ctx.fillStyle = '#c8a0ff';
+            ctx.fillRect(sx - 6, sy, 6, 1);
             for (let i = -14; i < 14; i += 6) {
-              ctx.fillStyle = '#5a3a9a';
-              ctx.fillRect(sx + i, sy - Math.abs(Math.sin(q.t * 0.12 + i)) * 2, 2, 2);
+              ctx.fillStyle = '#7a4ad0';
+              ctx.fillRect(sx + i, sy - Math.abs(Math.sin(q.t * 0.12 + i)) * 3, 2, 2);
             }
             ctx.globalAlpha = 1;
+            glow(ctx, sx, sy + 1, 14, '#7a4ad0', 0.35 * a);
+            lit(null, ctx, sx, sy, 30, '#8a4ad0', 0.5 * a);
           },
         });
         pd.owner = e;
@@ -3096,6 +3109,7 @@
       for (let i = 0; i < 30; i++) G.fx.particle(e.home.x + U.rnd(-30, 30), e.A.floor - 8, U.rnd(-2, 2), U.rnd(-4, -1), U.pick(['#e8dcb8', '#b8a882']), 60, { grav: 0.08, size: 2, drag: 0.97 });
     },
     onHitCheck(e, hit) {
+      if (!awake(e)) return false;
       const box = { x: hit.x, y: hit.y, w: hit.w || 8, h: hit.h || 8 };
       let weakHit = false, headHit = false, armor = false;
       for (const p of bwParts(e)) {
@@ -3356,11 +3370,11 @@
         const sc0 = Math.min(1, 60 / e.h, 90 / e.w);
         ctx.scale(0.4 / sc0, 0.4 / sc0);
         for (let i = BW_SEGS - 1; i >= 0; i--) {
-          const a = -0.4 + i * 0.5;
-          const x = -60 + i * 16 - 40, y = -40 + Math.sin(i * 0.9) * 22;
-          put(null, ctx, i === BW_SEGS - 1 ? bwTail(a, false) : bwSeg(a, i % 3, i === BW_WEAK, false), x, y);
+          const x = -58 + i * 17, y = -34 + Math.sin(i * 0.8 + 0.6) * 22;
+          const a = Math.atan2(Math.cos(i * 0.8 + 0.6) * 22 * 0.8, 17) + Math.PI;
+          put(null, ctx, i === BW_SEGS - 1 ? bwTail(a, true) : bwSeg(a, i % 3, i === BW_WEAK, true), x, y);
         }
-        put(null, ctx, bwHead(-0.3, 1, false), -110, -50);
+        put(null, ctx, bwHead(Math.PI + 0.5, 1, true), -78, -44);
         ctx.restore();
         return;
       }
@@ -3811,6 +3825,7 @@
       e.setState('awaken');
       sfx('gear', { vol: 1, pitch: 0.6 });
     },
+    onHitCheck: (e) => awake(e),
     onHit(e, hit, g) {
       bossOnHit(e, hit, g);
       if (!e.dying) G.fx.spark(e.cx, e.cy, '#f0d890', 4);
@@ -4071,7 +4086,8 @@
           const n = p2 ? 6 : 4;
           for (let i = 0; i < n; i++) {
             if (tt === 14 + i * 8) {
-              const a = -Math.PI / 2 + (i - (n - 1) / 2) * (Math.PI / (n - 0.5)) + (i % 2 ? 0.15 : -0.15);
+              // a fan from above (within ±54° of vertical): a decisive sidestep clears them all
+              const a = -Math.PI / 2 + ((i - (n - 1) / 2) / ((n - 1) / 2)) * 0.94;
               const r = 78;
               const fx0 = pl.cx + Math.cos(a) * r, fy0 = pl.cy + Math.sin(a) * r;
               const p = bladeFeather(e, g, fx0, fy0, Math.atan2(pl.cy - fy0, pl.cx - fx0), p2 ? 2.8 : 2.2, true);
@@ -4665,7 +4681,7 @@
       G.fx.burst(e.cx, e.cy, '#c890ff', 30, 2.5, { glow: true });
     },
     onHitCheck(e) {
-      return e.vis > 0.5;
+      return awake(e) && e.vis > 0.5;
     },
     onHit(e, hit, g) {
       bossOnHit(e, hit, g);
@@ -4989,9 +5005,11 @@
           ctx.stroke();
           put(e, ctx, quillImg(q.a), qx, qy - 8);
           if (e.stT < 44) {
-            // target mark on the floor
-            const fy = e.A.floor - G.game.camy;
-            warnRect(ctx, Math.round(e.qx - G.game.camx) - 10, fy - 4, 20, 4, e.t, '#ff3a4a', true);
+            // target: a line from the nib to a mark on the floor
+            const fy = e.A.floor - G.game.camy, mx = Math.round(e.qx - G.game.camx);
+            warnLine(ctx, mx, qy + 36, mx, fy - 4, e.t, '#ff3a4a', 1);
+            warnRect(ctx, mx - 16, fy - 6, 32, 6, e.t, '#ff3a4a', true);
+            glow(ctx, qx, qy + 36, 8, '#ff3a4a', 0.7);
           }
         }
         lit(e, ctx, cx, cy, 120, '#ff3a4a', 0.7 * morph);

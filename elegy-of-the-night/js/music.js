@@ -202,7 +202,7 @@
     var PED = '@4 D2 | Bb1 | G1 | A1 | Bb1 | G1 | A1 | D2 |';
     var VC = '@1 F3*2 E3 D3 | D3*2 F3 Bb3 | Bb3*2 A3 G3 | A2*2 C#3 E3 | D3*2 F3 D3 | D3*2 G3 Bb3 | A3*2 G3 E3 | D3*2 A2*2 |';
     T.title = {
-      name: 'Elegy of the Night', bpm: 70, meter: 4, vol: 1.2,
+      name: 'Elegy of the Night', bpm: 70, meter: 4, vol: 1.19,
       parts: {
         org: { i: 'organ', v: 0.75, s: 0.4 },
         orgb: { i: 'organ', v: 0.42, s: 0.4, vel: 0.7 },
@@ -236,7 +236,7 @@
   // 2. PROLOGUE — narration underscore, A minor, 60 BPM (quiet)
   // ======================================================================
   T.prologue = {
-    name: 'Chronicle of Ashes', bpm: 60, meter: 4, vol: 1.51,
+    name: 'Chronicle of Ashes', bpm: 60, meter: 4, vol: 1.58,
     parts: {
       pno: { i: 'piano', v: 0.8, p: -0.1, vel: 0.62 },
       lo:  { i: 'cello', v: 0.6, p: 0.15, vel: 0.6 },
@@ -264,38 +264,38 @@
     var RB = { k: 'X.....x.X.....x.', s: '....X.......X...', h: 'X.x.X.x.X.x.X.x.' };
     var FILL = { k: 'X.....x.X.......', s: '....X...XX......', m: '..........XX....', t: '............XXXX', h: 'X.x.X.x.........' };
     var HT = { k: 'X.........X.....', s: '........X.......', r: 'x.x.x.x.x.x.x.x.' };
-    var LEAD_A = '@0.5 E5*3 D5*3 B4*2 | C5*3 B4*3 G4*2 | A4*3 B4*3 D5*2 | B4*6 E4 F#4 | E5*3 D5*3 B4*2 | E5*3 F#5*3 G5*2 | A5*3 G5*3 E5*2 | F#5*4 D#5*2 B4*2 |';
+    var LEAD_A = '@0.5 E5*3 D5*3 B4*2 | C5*3 B4*3 G4*2 | A4*3 B4*3 D5*2 | B4*6 E4 F#4 | E5*3 D5*3 B4*2 | C5*3 E5*3 G5*2 | A5*3 G5*3 E5*2 | F#5*4 D#5*2 B4*2 |';
     var LEAD_A2 = '@0.5 E5*3 D5*3 B4*2 | C5*3 B4*3 G4*2 | A4*3 B4*3 D5*2 | B4*6 E4 F#4 | G5*3 F#5*3 E5*2 | E5*3 D5*3 C5*2 | C5*3 B4*3 A4*2 | B4*8 |';
     var BASS_A = '@0.5 ' + [b8('E2', 'E3'), b8('C2', 'C3'), b8('D2', 'D3'), b8('E2', 'E3'), b8('E2', 'E3'), b8('C2', 'C3'), b8('A1', 'A2'), b8('B1', 'B2', 'D#2')].join(' | ') + ' |';
-    var PAD_A = '@4 E4+G4+B4 | E4+G4+C5 | D4+F#4+A4 | E4+G4+B4 | E4+G4+B4 | E4+G4+C5 | E4+A4+C5 | D#4+F#4+B4 |';
+    var PAD_A = '@4 E4+G4+B4 | C4+E4+G4 | D4+F#4+A4 | E4+G4+B4 | E4+G4+B4 | C4+E4+G4 | C4+E4+A4 | D#4+F#4+B4 |';
     var GTR_A = '@0.5 ' + [stac('E3+B3', 8), stac('C3+G3', 8), stac('D3+A3', 8), stac('E3+B3', 8), stac('E3+B3', 8), stac('C3+G3', 8), stac('A2+E3', 8), stac('B2+F#3', 8)].join(' | ') + ' |';
     var TOC = '@0.25 E5 B4 G4 B4 E5 B4 G4 B4 G5 E5 B4 E5 G5 E5 B4 E5 | D5 A4 F#4 A4 D5 A4 F#4 A4 F#5 D5 A4 D5 F#5 D5 A4 D5 | C5 G4 E4 G4 C5 G4 E4 G4 E5 C5 G4 C5 E5 C5 G4 C5 | B4 F#4 D#4 F#4 B4 F#4 D#4 F#4 D#5 B4 F#4 B4 D#5 F#5 A5 F#5 |';
     var BASS_C = '@0.5 ' + [b8('E2', 'E3'), b8('D2', 'D3'), b8('C2', 'C3'), b8('B1', 'B2', 'D#2')].join(' | ') + ' |';
     T.entrance = {
-      name: 'Gate of the Crimson Moon', bpm: 132, meter: 4, vol: 1.7, hum: [0.004, 0.06],
+      name: 'Gate of the Crimson Moon', bpm: 132, meter: 4, vol: 1.38, hum: [0.004, 0.06],
       parts: {
         lead: { i: 'organ_lead', v: 1.3, p: 0.05 },
         vln:  { i: 'violins', v: 1.1, p: -0.1 },
         hpsi: { i: 'harpsichord', v: 1.0, p: 0.3 },
         pad:  { i: 'strings', v: 0.6, p: -0.3, vel: 0.6 },
         org:  { i: 'organ', v: 0.5, p: 0.2, vel: 0.65 },
-        bass: { i: 'bass', v: 0.72 },
+        bass: { i: 'bass', v: 0.8 },
         gtr:  { i: 'guitar', v: 0.46, p: -0.35, vel: 0.7 },
-        dr:   { kit: 1, v: 0.68 }
+        dr:   { kit: 1, v: 0.8 }
       },
       sections: {
         I: { bars: 2, dr: dsec(2, { k: 'X...X...X...X...', h: 'x.x.x.x.x.x.x.x.' }, FILL),
           bass: '@0.5 .*8 | E2 E2 E2 E2 E2 E2 E2 D#2 |', gtr: '@0.5 .*8 | ' + stac('E3+B3', 8) + ' |' },
         A: { bars: 8, lead: LEAD_A, bass: BASS_A, pad: PAD_A, dr: dsec(8, RB, FILL, 0.25, true) },
-        A2: { bars: 8, lead: LEAD_A2, hpsi: 't-12 ' + LEAD_A2, bass: BASS_A, pad: PAD_A, gtr: GTR_A, dr: dsec(8, RB, FILL, 0.25, true) },
+        A2: { bars: 8, lead: LEAD_A2, hpsi: LEAD_A2, bass: BASS_A, pad: PAD_A, gtr: GTR_A, dr: dsec(8, RB, FILL, 0.25, true) },
         B: { bars: 8,
           vln: '@0.5 C5*4 B4*2 A4*2 | B4*6 G4*2 | A4*4 C5*4 | D#5*8 | E5*4 D5*2 C5*2 | B4*4 E5*4 | G5*4 F#5*2 E5*2 | F#5*8 |',
-          org: '@4 E4+A4+C5 | E4+G4+B4 | F4+A4+C5 | D#4+F#4+B4 | E4+A4+C5 | E4+G4+B4 | E4+G4+C5 | D#4+F#4+B4 |',
+          org: '@4 C4+E4+A4 | E4+G4+B4 | C4+F4+A4 | D#4+F#4+B4 | C4+E4+A4 | E4+G4+B4 | C4+E4+G4 | D#4+F#4+B4 |',
           bass: '@1 A2*2 A2 E2 | E2*2 E2 B1 | F2*2 F2 C3 | B1*2 B1 F#2 | A2*2 A2 E2 | E2*2 E2 B1 | C2*2 C2 G2 | B1*2 B1 D#2 |',
           dr: dsec(8, HT, FILL, 0.25, true) },
         C: { bars: 8, hpsi: TOC,
           lead: '@0.5 .*8 | .*8 | .*8 | .*8 | E5*4 G5*4 | F#5*4 A5*4 | G5*4 E5*4 | F#5*6 D#5*2 |',
-          bass: BASS_C, pad: '@4 E4+G4+B4 | D4+F#4+A4 | E4+G4+C5 | D#4+F#4+B4 |',
+          bass: BASS_C, pad: '@4 E4+G4+B4 | D4+F#4+A4 | C4+E4+G4 | D#4+F#4+B4 |',
           gtr: '@0.5 .*8 | .*8 | .*8 | .*8 | ' + [stac('E3+B3', 8), stac('D3+A3', 8), stac('C3+G3', 8), stac('B2+F#3', 8)].join(' | ') + ' |',
           dr: dsec(8, RB, FILL, 0.25, true) }
       },
@@ -322,7 +322,7 @@
     var ARP_B = bars('@0.5', CH_B.map(function (c) { return alb(c[0], c[1], c[2]); }));
     var STR_B = bars('@3', CH_B.map(function (c) { return c.join('+'); }));
     T.gallery = {
-      name: 'Waltz of Marble Saints', bpm: 150, meter: 3, vol: 1.8, hum: [0.005, 0.07],
+      name: 'Waltz of Marble Saints', bpm: 150, meter: 3, vol: 1.35, hum: [0.005, 0.07],
       parts: {
         hpsi: { i: 'harpsichord', v: 1.25, p: 0.1 },
         fl:   { i: 'flute', v: 0.5, p: -0.2 },
@@ -354,11 +354,11 @@
     var MEL_C = "@0.5 C6' . G5' . Eb5' . | C6' . Ab5' . Eb5' . | F5' Ab5' C6' Ab5' F5' Ab5' | G5*2 F5' Eb5' D5' B4' | C5' D5' Eb5' . G5' . | Ab5' G5' F5' . C5' . | B4' C5' D5' F5' Eb5' D5' | C5*2 . . G4' . |";
     var TICK = { step: 1, u: 'x..', w: '.oo' };
     T.library = {
-      name: 'Minuet of the Silent Stacks', bpm: 110, meter: 3, vol: 2.34, hum: [0.006, 0.08],
+      name: 'Minuet of the Silent Stacks', bpm: 110, meter: 3, vol: 1.48, hum: [0.006, 0.08],
       parts: {
         hpsi: { i: 'harpsichord', v: 1.4, p: 0.15 },
         fl:   { i: 'flute', v: 0.57, p: -0.2 },
-        pz:   { i: 'pizz', v: 1.0, p: -0.05 },
+        pz:   { i: 'pizz', v: 0.8, p: -0.05 },
         hp2:  { i: 'harpsichord', v: 0.65, p: -0.3, vel: 0.6 },
         cel:  { i: 'celesta', v: 0.7, p: 0.35 },
         dr:   { kit: 1, v: 1.8 }
@@ -396,7 +396,7 @@
     var ARP_B = bars('@1/3', [Db + ' ' + Db, AbC + ' ' + AbC, Bbm + ' ' + Bbm, Eb + ' ' + Eb, Db + ' ' + Db, AbC + ' ' + AbC, Bbm + ' ' + C, C7 + ' ' + C7]);
     var BEL = '@1 . . Ab5 . | . . G5 . | . . F5 Db6 | C6 . . . | . . Ab5 . | . . G5 . | .*4 | F5 . . . |';
     T.archives = {
-      name: 'Hymn of the Belmont Archives', bpm: 96, meter: 4, step: 1 / 3, vol: 1.4, hum: [0.006, 0.07],
+      name: 'Hymn of the Belmont Archives', bpm: 96, meter: 4, step: 1 / 3, vol: 1.14, hum: [0.006, 0.07],
       parts: {
         mel: { i: 'violins', v: 1.0, p: -0.05, vel: 0.85 },
         org: { i: 'organ', v: 0.6, p: 0.15, vel: 0.7 },
@@ -432,13 +432,13 @@
   // 7. ARCHIVES DEEP — "The Forbidden Vault"  F Phrygian/minor, 12/8, 72 BPM
   // ======================================================================
   T.archives_deep = {
-    name: 'The Forbidden Vault', bpm: 72, meter: 4, step: 1 / 3, vol: 1.06, hum: [0.008, 0.08],
+    name: 'The Forbidden Vault', bpm: 72, meter: 4, step: 1 / 3, vol: 1.04, hum: [0.008, 0.08],
     parts: {
       vc:  { i: 'cello', v: 1.15, p: 0.15, vel: 0.75 },
       dn:  { i: 'drone', v: 0.45 },
       pad: { i: 'pad', v: 0.9, p: -0.1 },
       cho: { i: 'choir_low', v: 0.55, p: -0.25, vel: 0.65 },
-      bel: { i: 'bell', v: 1.15, p: 0.4, s: 0.7, fx: { echo: [1.5, 0.45, 0.4], lp: 3000 } },
+      bel: { i: 'bell', v: 1.6, p: 0.4, s: 0.7, fx: { echo: [1.5, 0.45, 0.4], lp: 3000 } },
       org: { i: 'organ_soft', v: 0.5, p: 0.3, vel: 0.5 },
       dr:  { kit: 1, v: 0.5 }
     },
@@ -469,7 +469,7 @@
         Gs4 = 'G#3 D#4 C#5 D#5 G#5 D#5 C#5 D#4', Gs = 'G#3 D#4 B#4 D#5 G#5 D#5 B#4 D#4', Em7 = 'E3 B3 D#4 G#4 B4 G#4 D#4 B3',
         Am9 = 'A3 E4 B4 C#5 G#5 C#5 B4 E4', Gs7 = 'G#3 D#4 B#4 F#5 G#5 F#5 B#4 D#4';
     T.caverns = {
-      name: 'Where the Dark Water Sleeps', bpm: 80, meter: 4, vol: 1.24, hum: [0.008, 0.1],
+      name: 'Where the Dark Water Sleeps', bpm: 80, meter: 4, vol: 1.18, hum: [0.008, 0.1],
       parts: {
         gl:  { i: 'glass', v: 1.2, p: -0.25, vel: 0.7, fx: { echo: [0.75, 0.35, 0.3] } },
         pad: { i: 'strings', v: 0.78, p: 0.2, vel: 0.5 },
@@ -510,7 +510,7 @@
     var MEL = '@0.5 F#5*6 E5 D5 | C#5*4 D5*2 E5*2 | D5*6 B4*2 | G5*4 F#5*2 E5*2 | E5*4 G5*2 B5*2 | A#4*4 C#5*2 E5*2 | F#5*4 D5*2 B4*2 | C#5*8 |';
     var TT = { w: 'x...x...x...x...', u: '..o...o...o...o.' };
     T.clocktower = {
-      name: 'Gears of the Midnight Hour', bpm: 144, meter: 4, vol: 2.0, hum: [0.002, 0.05],
+      name: 'Gears of the Midnight Hour', bpm: 144, meter: 4, vol: 1.28, hum: [0.002, 0.05],
       parts: {
         ost:  { i: 'strings_stac', v: 1.2, p: 0.2, vel: 0.7 },
         bass: { i: 'contrabass', v: 0.73, gate: 0.5 },
@@ -576,7 +576,7 @@
     var PED_A = '@4 A2 | F2 | E2 | A2 | F2 | E2 | D2 | E2 |';
     var CHO_A = '@1 A4+C5*2 G#4+B4 A4+C5 | A4+D5*2 D5+F5*2 | B4+E5*3 G#4+D5 | A4+C5*4 | A4+C5*2 A4+D5 A4+C5 | C5+E5*2 B4+D5 G4+C5 | D5+F5*2 C5+E5 A4+D5 | B4+E5*2 G#4+D5*2 |';
     T.chapel = {
-      name: 'Vespers for the Forsaken', bpm: 76, meter: 4, vol: 1.11, hum: [0.006, 0.06],
+      name: 'Vespers for the Forsaken', bpm: 76, meter: 4, vol: 1.07, hum: [0.006, 0.06],
       parts: {
         org: { i: 'organ_soft', v: 0.55, p: -0.1, vel: 0.75 },
         ped: { i: 'organ_pedal', v: 0.67 },
@@ -612,7 +612,7 @@
     var RUN = "@0.25 .*8 G4 Ab4 B4 C5 D5 Eb5 F5 G5";
     var KB = { k: 'X.x...x.X.x...x.', s: '....X.......X...', h: 'x.x.x.x.x.x.x.x.' };
     T.keep = {
-      name: 'Throne of Thorns', bpm: 140, meter: 4, vol: 1.75, hum: [0.003, 0.05],
+      name: 'Throne of Thorns', bpm: 140, meter: 4, vol: 1.33, hum: [0.003, 0.05],
       parts: {
         org:  { i: 'organ_full', v: 1.2, p: 0.1 },
         lead: { i: 'brass', v: 1.2, p: -0.1 },
@@ -670,7 +670,7 @@
     var HTB = { k: 'X.........X.....', s: '........X.......', T: 'X..X..X.........', h: 'x...x...x...x...' };
     function tp(n) { return n + "! . . " + n + " . . " + n + " ."; }
     T.boss = {
-      name: 'Crimson Duel', bpm: 160, meter: 4, vol: 1.7, hum: [0.002, 0.05],
+      name: 'Crimson Duel', bpm: 160, meter: 4, vol: 1.19, hum: [0.002, 0.05],
       parts: {
         gtr:  { i: 'guitar', v: 0.52, p: -0.3 },
         bass: { i: 'bass', v: 0.75 },
@@ -719,7 +719,7 @@
     var Am = 'A3 C4 E4 A4 C5 A4 E4 C4', Fc = 'F3 A3 C4 F4 A4 F4 C4 A3', Dm = 'D3 F3 A3 D4 F4 D4 A3 F3', Ec = 'E3 G#3 B3 E4 G#4 E4 B3 G#3', Gc = 'G3 B3 D4 G4 B4 G4 D4 B3';
     var ARP_D = bars('@0.25', [Am + ' ' + Am, Fc + ' ' + Fc, Dm + ' ' + Dm, Ec + ' ' + Ec, Am + ' ' + Am, Fc + ' ' + Fc, Gc + ' ' + Gc, Ec + ' ' + Ec]);
     T.boss_final = {
-      name: 'Requiem for the Last Hunter', bpm: 150, meter: 4, vol: 1.56, hum: [0.002, 0.05],
+      name: 'Requiem for the Last Hunter', bpm: 150, meter: 4, vol: 1.27, hum: [0.002, 0.05],
       parts: {
         org:  { i: 'organ_full', v: 1.2, p: 0.1 },
         orgc: { i: 'organ_full', v: 0.55, p: 0.1, vel: 0.7 },
@@ -756,12 +756,12 @@
   // 15. SAVE — "Sanctuary Light"  Bb major, 60 BPM (calm choir loop)
   // ======================================================================
   T.save = {
-    name: 'Sanctuary Light', bpm: 60, meter: 4, vol: 0.95, hum: [0.006, 0.05],
+    name: 'Sanctuary Light', bpm: 60, meter: 4, vol: 0.9, hum: [0.006, 0.05],
     parts: {
       cho: { i: 'choir', v: 0.8, vel: 0.7 },
       org: { i: 'organ_soft', v: 0.5, p: -0.15, vel: 0.65 },
-      gl:  { i: 'glass', v: 1.6, p: 0.3, vel: 0.6 },
-      str: { i: 'strings', v: 1.1, p: 0.25, vel: 0.5 }
+      gl:  { i: 'glass', v: 2.4, p: 0.3, vel: 0.6 },
+      str: { i: 'strings', v: 1.7, p: 0.25, vel: 0.5 }
     },
     sections: {
       A: { bars: 8,
@@ -785,13 +785,13 @@
     var PZ_B = '@1 Bb1 . F2 . | C2 . G2 . | A1 . E2 . | D2 . A2 . | G1 . D2 . | C2 . G2 . | F2 . C3 . | C2 . Bb1 . |';
     var DR = { step: 0.5, y: 'xoxoxoxo', i: pad('o', 32) };
     T.shop = {
-      name: "The Librarian's Curios", bpm: 100, meter: 4, vol: 2.29, hum: [0.007, 0.08],
+      name: "The Librarian's Curios", bpm: 100, meter: 4, vol: 1.57, hum: [0.007, 0.08],
       parts: {
         hpsi: { i: 'harpsichord', v: 1.5, p: 0.15 },
         acc:  { i: 'harpsichord', v: 0.72, p: -0.3, vel: 0.6 },
-        pz:   { i: 'pizz', v: 0.95, p: -0.05 },
+        pz:   { i: 'pizz', v: 0.75, p: -0.05 },
         fl:   { i: 'flute', v: 0.5, p: 0.3 },
-        dr:   { kit: 1, v: 1.4 }
+        dr:   { kit: 1, v: 2.2 }
       },
       sections: {
         A:  { bars: 8, hpsi: MEL_A, acc: ACC_A, pz: PZ_A, dr: DR },
@@ -831,7 +831,7 @@
         BbF = arp6('F3', 'Bb3', 'D4', 'F4'), C7s = arp6('C3', 'G3', 'Bb3', 'F4');
     function two(x) { return x + ' ' + x; }
     T.ending = {
-      name: 'Lantern at Dawn', bpm: 72, meter: 4, step: 1 / 3, vol: 1.06, hum: [0.008, 0.07],
+      name: 'Lantern at Dawn', bpm: 72, meter: 4, step: 1 / 3, vol: 1.08, hum: [0.008, 0.07],
       parts: {
         pno: { i: 'piano', v: 0.58, p: -0.1, vel: 0.62 },
         vln: { i: 'violins', v: 0.95, p: 0.1, vel: 0.8 },

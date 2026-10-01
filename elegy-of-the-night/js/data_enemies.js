@@ -4284,6 +4284,14 @@
   // Debug overlay (G.DEBUG_HITBOX = true): hurtbox in green, attack boxes in red.
   MY.forEach((id) => {
     const d = G.ENEMIES[id];
+    // spawned embedded in a solid tile (e.g. placed on a step)? climb out on top of it
+    const init = d.init;
+    d.init = function (e, g) {
+      if (init) init(e, g);
+      const room = g && g.room;
+      if (!room || e.flying) return;
+      for (let i = 0; i < 4 && P.rectSolid(room, e.x + 1, e.y, e.w - 2, e.h - 1); i++) e.y = (Math.floor((e.y + e.h - 1) / TS) - 1) * TS + TS - e.h;
+    };
     // anything that fell into a bottomless pit is gone for good (no reward)
     const ai = d.ai;
     d.ai = function (e, g) {

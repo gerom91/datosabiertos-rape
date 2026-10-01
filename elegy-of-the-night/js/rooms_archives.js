@@ -374,7 +374,7 @@
     b.fill(78, 6, 94, 25);
     b.tome(91, 5, 'belmont_ward');
     b.item(84, 5, 'heart_up');
-    b.candle(86, 2);
+    b.candle(87, 3);
     b.candle(7, 15);
     b.candle(25, 18);
     b.candle(38, 20);
@@ -400,9 +400,7 @@
 
   // A5 — crossroads tower: down to the Stacks, up to the Scriptorium, east to
   // the teleporter. Alternating balconies climb its full height.
-  // (B0 is two-way in the game; it is flagged oneway only because tools/validate.js cannot
-  // simulate arrivals from below yet — the climb back from B0 is verified separately.)
-  A({ id: 'arc_cross', area: 'arc_hall', x: 18, y: 6, w: 2, h: 4, lvl: 1, entry: 'L2', oneway: ['B0'], noDecor: true,
+  A({ id: 'arc_cross', area: 'arc_hall', x: 18, y: 6, w: 2, h: 4, lvl: 1, entry: 'L2', noDecor: true,
       art: [
         // the hatch to the Scriptorium and the upper tower
         ['chain', 6, 2], ['chain', 24, 2], ['chandelier', 20, 6], ['portrait', 8, 6], ['crest', 26.6, 3],
@@ -670,11 +668,9 @@
 
   // =============================== SCRIPTORIUM ===============================
 
-  // C1 — entrance shaft of the Scriptorium
-  // Usually entered from below (B0, the hatch from the crossroads tower). tools/validate.js
-  // cannot simulate arrivals from below yet, so it walks this room from L1 and B0 is
-  // flagged oneway for the validator only; the climb from the hatch is verified separately.
-  A({ id: 'scr_entry', area: 'arc_scriptorium', x: 19, y: 3, w: 2, h: 3, lvl: 1, entry: 'L1', oneway: ['B0'], noDecor: true,
+  // C1 — entrance shaft of the Scriptorium, usually entered from below (B0, the hatch
+  // from the crossroads tower)
+  A({ id: 'scr_entry', area: 'arc_scriptorium', x: 19, y: 3, w: 2, h: 3, lvl: 1, entry: 'B0', noDecor: true,
       art: [
         // the loft and the void window above the bridge
         ['arch', 27, 3, { w: 96, h: 150 }], ['chain', 21, 2], ['chain', 41, 2],
@@ -802,7 +798,9 @@
     b.enemy(70, 5, 'living_grimoire');
   });
 
-  // C4 — the grate column: iron grates that only mist can pass
+  // C4 — the grate column: three iron grates that only mist can pass. Each grate is also a
+  // floor to rest on (and recover MP) on the way up; the top one is a single jump below the
+  // hatch into the Hall of Hunters.
   A({ id: 'scr_grate', area: 'arc_scriptorium', x: 25, y: 3, w: 1, h: 2, lvl: 1, gates: { T0: 3 }, noDecor: true,
       art: [['chain', 4, 2], ['chain', 19, 2], ['crest', 10.75, 7.4], ['pennant', 3, 13.6, { h: 50 }], ['pennant', 18.5, 13.6, { h: 50 }],
             ['arch', 8.5, 13.4, { w: 64, h: 94 }], ['portrait', 13.5, 21.6], ['candelabra', 4, 26], ['candelabra', 19, 26]] }, (b) => {

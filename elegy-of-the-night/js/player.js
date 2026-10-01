@@ -529,7 +529,8 @@
       if (this.t % 2 === 0) G.fx.particle(this.cx + U.rnd(-3, 3), this.fy, 0, 1, '#ffd080', 14);
     } else {
       let gmul = 1;
-      if (this.vy < 0 && !I.held.jump && !this.flipT) gmul = 2.3;
+      if (this.riseT > 0) this.riseT--;
+      else if (this.vy < 0 && !I.held.jump && !this.flipT) gmul = 2.3;
       if (this.inWater) gmul *= 0.55;
       this.vy = Math.min(this.vy + GRAV * gmul, this.inWater ? 3.5 : 7);
     }
@@ -793,7 +794,8 @@
       this.coyote = 0;
       this.onGround = false;
     }
-    if (this.vy < 0 && !I.held.jump) this.vy += GRAV * 1.2;
+    if (this.riseT > 0) this.riseT--;
+    else if (this.vy < 0 && !I.held.jump) this.vy += GRAV * 1.2;
     this.vy = Math.min(this.vy + GRAV, 7);
     if ((I.pressed.attack || I.pressed.attack2) && !this.atk) {
       this.atk = { hand: 'rhand', item: G.ITEMS.fist, wt: 'bite', t: 0, wind: 2, act: 10, rec: 8, id: 'wb' + U.uid() };

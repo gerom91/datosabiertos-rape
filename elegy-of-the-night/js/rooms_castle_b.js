@@ -173,23 +173,24 @@
     c.fillStyle = 'rgba(2,6,12,' + (o.dim == null ? 0.38 : o.dim) + ')';
     c.fillRect(0, 0, room.pw, room.ph);
     const lit = U.shade(th.c.base, -0.25), hi = U.shade(th.c.base, 0.05);
-    let lastLight = -99;
+    const glows = []; // crystal clusters placed so far (kept apart: one light each)
+    const farFromGlows = (tx, ty) => glows.every(([gx, gy]) => Math.abs(gx - tx) + Math.abs(gy - ty) > 8);
     for (let ty = 1; ty < room.th - 1; ty++)
       for (let tx = 1; tx < room.tw - 1; tx++) {
         const t = room.get(tx, ty);
         if (!solidT(t)) continue;
         if (openT(room.get(tx, ty + 1)) && rng.chance(o.stal)) {
-          let room2 = 0;
-          while (room2 < 3 && openT(room.get(tx, ty + 1 + room2))) room2++;
-          const len = rng.int(6, 10 + room2 * 7), w = rng.int(4, 9), x = tx * 16 + rng.int(1, 15 - w), y = (ty + 1) * 16;
+          let gap = 0;
+          while (gap < 3 && openT(room.get(tx, ty + 1 + gap))) gap++;
+          const len = rng.int(6, 10 + gap * 7), w = rng.int(4, 9), x = tx * 16 + rng.int(1, 15 - w), y = (ty + 1) * 16;
           tri(c, [x, y, x + w, y, x + w * 0.55, y + len], lit);
           tri(c, [x + 1, y, x + w * 0.4, y, x + w * 0.5, y + len * 0.8], hi);
           if (rng.chance(0.3)) rect(c, x + w * 0.5, y + len + 3, 1, 2, '#6ab8d8');
         }
         if (openT(room.get(tx, ty - 1)) && openT(room.get(tx, ty - 2))) {
           const x = tx * 16, y = ty * 16;
-          if (rng.chance(o.crys) && tx - lastLight > 6) {
-            lastLight = tx;
+          if (rng.chance(o.crys) && farFromGlows(tx, ty)) {
+            glows.push([tx, ty]);
             const c1 = o.crysCol[0], c2 = o.crysCol[1];
             tri(c, [x + 2, y, x + 5, y - 13, x + 8, y], c1);
             tri(c, [x + 6, y, x + 10, y - 19, x + 13, y], c2);
@@ -740,7 +741,7 @@
   R({
     id: 'cha_tower', area: 'chapel', x: 14, y: 6, w: 2, h: 6, lvl: 4, entry: 'B0', noDecor: true,
     onEnter: paint((c, room, th, rng, L) => {
-      for (const [x, y, w, h] of [[20, 63, 44, 120], [6, 42, 48, 140], [36, 20, 44, 100], [24, 2, 40, 64], [32, 80 - 22, 40, 72]]) lancet(c, x * 16, y * 16, w, h, rng, L, { bg: rng.pick(['#1c2c6a', '#5a1830', '#2a1c5a']) });
+      for (const [x, y, w, h] of [[20, 63, 44, 120], [6, 42, 48, 140], [36, 20, 44, 100], [24, 2, 40, 64], [32, 58, 40, 72]]) lancet(c, x * 16, y * 16, w, h, rng, L, { bg: rng.pick(['#1c2c6a', '#5a1830', '#2a1c5a']) });
       // bell ropes falling from the belfry
       for (const x of [23 * 16 + 4, 25 * 16 + 10]) {
         rect(c, x, 0, 2, 60 * 16, '#6a5030');
@@ -892,7 +893,7 @@
   // C1 — the descent: the cellar's wolf tunnel opens high in a cave shaft that
   // winds down to a drop into the lake (B0) and a passage to the falls (R2).
   R({
-    id: 'cav_entry', area: 'caverns', x: 14, y: 20, w: 2, h: 3, lvl: 2, oneway: ['B0'], darkness: 0.5, noDecor: true,
+    id: 'cav_entry', area: 'caverns', x: 14, y: 20, w: 2, h: 3, lvl: 2, darkness: 0.5, noDecor: true,
     onEnter: paint((c, room, th, rng, L) => caveDetail(c, room, th, rng, L)),
   }, (b) => {
     b.fill(0, 0, b.tw - 1, b.th - 1);
@@ -939,6 +940,7 @@
     b.enemy(26, 8, 'crystal_crawler');
     b.enemy(22, 27, 'crystal_crawler');
   });
+
   // C2 — the underground lake: a long cavern of black water, rock islands and a
   // moonlit grotto at its western end. Arrival from the descent above (T4).
   R({
@@ -990,13 +992,14 @@
     drip(b, 27, 3, '0123455554321');
     drip(b, 44, 3, '2468642');
     drip(b, 80, 4, '136631');
+    // a moonlit ledge in the grotto
+    b.plat(7, 12, 12);
     // the water
     flood(b, 20, 94, 21);
     b.door('R', 1);
     // ---- entities
     b.spawn(66, 4, { t: 'cb_fall', w: 2, h: 17 });
     b.item(11, 17, 'moonlit_blade');
-    b.plat(7, 12, 12);
     b.item(10, 11, 'mp_up');
     b.item(58, 9, 'blood_signet');
     b.candle(5, 13);
@@ -1011,6 +1014,7 @@
     swimmer(b, 84, 24, 'drowned_one');
     b.enemy(96, 18, 'cave_toad');
   });
+
   // C3 — the waterfall chamber: a torrent pours from a crack in the vault into
   // a deep pool; a rock arch crosses in front of it high above.
   R({
@@ -1045,18 +1049,18 @@
     // the pool and its shores
     rise(b, 1, 25, '444444444444444444' + '4321' + '1' + '0000000000000000000000' + '1' + '1234' + '44444444');
     rise(b, 59, 25, '444432100000');
+    // a rock under the falls, worn smooth by the torrent
+    rise(b, 31, 25, '01233210');
     flood(b, 17, 58, 22);
-    // stepping stones in the pool
-    rise(b, 29, 25, '55', false);
-    rise(b, 41, 25, '55', false);
     // east ledge above the exit
     shelf(b, 60, 71, 17, 2, { r: false });
     b.door('R', 1);
+    // a loose rock pile against the west wall
+    b.fill(1, 19, 2, 21, 'B');
+    b.hidden(1, 20, 'hp_up');
     // ---- entities
     b.spawn(34, 2, { t: 'cb_fall', w: 2, h: 20 });
     b.item(67, 10, 'mana_tonic');
-    b.fill(1, 19, 2, 21, 'B'); // a loose rock pile against the west wall
-    b.hidden(1, 20, 'hp_up');
     b.candle(7, 8);
     b.candle(22, 10);
     b.candle(50, 10);
@@ -1086,10 +1090,10 @@
     // floor: up from the doors onto the grotto, a still pool in the middle
     rise(b, 1, 11, '0000000000012' + '2222222222222' + '0000000000000000000' + '2222222222222' + '222100000000');
     b.clear(27, 12, 45, 12);
+    rise(b, 24, 12, '33321' + '00000000000000' + '12333'); // the pool's shelving banks
     flood(b, 27, 45, 10);
-    // crystal stalagmites standing in the grotto
-    rise(b, 19, 9, '1', false);
-    rise(b, 51, 9, '12', false);
+    // a crystal-crusted mound under the vessel's alcove
+    rise(b, 49, 9, '012210');
     // the vessel's alcove in the vault
     b.clear(53, 1, 57, 3);
     b.fill(53, 0, 57, 0);
@@ -1121,6 +1125,7 @@
     b.candle(22, 7);
     b.candle(42, 7);
   });
+
   // C6 — the deep caves: a great chasm above an underground river. The way on
   // to the relic shrine (R2) is barred by an iron grate only mist can pass.
   R({
@@ -1252,10 +1257,11 @@
     b.door('B', 1);
     b.clear(34, 24, 37, 25);
     b.fill(34, 24, 37, 24, 'G');
+    // ice-bound rubble in the grotto
+    b.fill(1, 20, 2, 22, 'B');
+    b.hidden(1, 21, 'heart_up');
     // ---- entities
     b.item(8, 16, 'frost_codex');
-    b.fill(1, 20, 2, 22, 'B'); // ice-bound rubble
-    b.hidden(1, 21, 'heart_up');
     b.candle(88, 8);
     b.candle(70, 12);
     b.candle(56, 15);
@@ -1265,6 +1271,7 @@
     b.enemy(58, 23, 'cave_toad');
     b.enemy(30, 8, 'crystal_crawler');
   });
+
   // ============================== CATACOMBS ==============================
   // K1 — the descent: under the grate a shaft of stacked bones drops into the dark.
   R({
@@ -1319,7 +1326,7 @@
     b.fill(1, 2, 16, 6);
     hang(b, 17, 2, '43221');
     // 2: first vault, a bone dais
-    rise(b, 26, 11, '1222222222221', false);
+    rise(b, 25, 11, '012222222222210');
     b.plat(36, 42, 6);
     hang(b, 28, 2, '0000011000');
     // 3: the narrow crawl
@@ -1328,13 +1335,13 @@
     b.set(44, 11, '/');
     b.set(59, 11, '\\');
     // 4: the great chamber and its gallery
-    rise(b, 61, 11, '333', false);
+    b.plat(60, 64, 8);
     b.fill(66, 6, 86, 7);
     b.fill(87, 2, 92, 7);
     b.fill(87, 3, 88, 5, 'B');
     // 5: exit vault
     hang(b, 93, 2, '3333322100000000000122333');
-    rise(b, 100, 11, '0111110', false);
+    rise(b, 100, 11, '0111110');
     // ---- entities
     b.item(76, 5, 'bone_cleaver');
     b.hidden(88, 4, 'heart_up');

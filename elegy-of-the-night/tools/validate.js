@@ -293,7 +293,8 @@ function doorStart(room, def, d) {
   if (d.side === 'T') return { cx, fy: 44, vy: 2, plans: [{ dir: 0, frames: 200, walk: 1 }, { dir: 1, frames: 200, walk: 1 }, { dir: -1, frames: 200, walk: 1 }] };
   const plans = [];
   for (const dir of [-1, 0, 1]) for (const dj of [0, 6, 14, 22]) for (const delay of [0, 10]) plans.push({ dir, jump: false, hold: 40, dj, delay, frames: 160 });
-  return { cx, fy: room.ph + 30, vy: -4.2, plans };
+  // arrival from below: feet just inside the bottom edge, rising as in game.js checkExit()
+  return { cx, fy: room.ph - 2, vy: -6, plans };
 }
 
 function reachSet(def, lvl, fromDoor) {

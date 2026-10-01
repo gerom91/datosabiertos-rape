@@ -258,7 +258,10 @@
     np.vx = vx;
     np.vy = vy;
     if (upward) {
-      np.vy = Math.min(vy, -4.2);
+      // climbing through a hole: enough lift (about 60 px) to clear a two-tile floor beside it
+      // and drift onto it, without the short-hop gravity cut while it lasts
+      np.vy = Math.min(vy, -6);
+      np.riseT = 22;
       np.y = Math.min(np.y, g.room.ph - np.h - 2);
     }
     // nudge out of walls if room edges disagree slightly
