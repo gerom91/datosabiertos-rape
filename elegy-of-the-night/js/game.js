@@ -505,6 +505,7 @@
     }
     resolveCombat();
     U.removeIf(list, (e) => e.dead);
+    ambient();
     G.fx.update();
     g.updateCamera();
     // interactions
@@ -524,6 +525,37 @@
     if (G.state.hp > 0 && G.state.hp < pl.st.hpMax * 0.2 && g.frame % 90 === 0) G.audio.sfx('low_health', { vol: 0.4 });
     if (pl.dead && pl.deadT === 150) G.ui.gameOver();
   };
+
+  // ---- ambient particles per theme ------------------------------------------------------------------------
+  const AMBIENT = {
+    library: { every: 9, col: '#e8d8a8', vy: -0.05, vx: 0.08, life: 160, glow: false },
+    archives: { every: 6, col: '#ffd890', vy: -0.12, vx: 0.05, life: 180, glow: true, pages: 0.08 },
+    vault: { every: 7, col: '#b48cff', vy: -0.15, vx: 0.04, life: 170, glow: true },
+    caverns: { every: 14, col: '#9ad6ff', vy: 2.2, vx: 0, life: 70, glow: false, drip: true },
+    catacombs: { every: 12, col: '#8a7a60', vy: 0.05, vx: 0.05, life: 160, glow: false },
+    keep: { every: 7, col: '#ff7a30', vy: -0.45, vx: 0.15, life: 120, glow: true },
+    chapel: { every: 10, col: '#fff0c0', vy: -0.08, vx: 0.03, life: 180, glow: true },
+    gallery: { every: 16, col: '#f0e8e0', vy: 0.02, vx: 0.1, life: 200, glow: false },
+  };
+  function ambient() {
+    const room = g.room;
+    if (!room || !room.theme) return;
+    const key = room.def.theme || room.area.theme;
+    const A = AMBIENT[key];
+    if (!A || g.frame % A.every) return;
+    if (G.fx.parts.length > 400) return;
+    const x = g.camx + Math.random() * G.W, y = A.drip ? g.camy + Math.random() * 40 : g.camy + Math.random() * G.H;
+    if (A.drip) {
+      // drips start under solid ceilings only
+      const tx = Math.floor(x / 16), ty = Math.floor(y / 16);
+      if (!P.solidAt(room, x, y - 16) || P.solidAt(room, x, y)) return;
+      G.fx.particle(x, y, 0, 0.5, A.col, A.life, { grav: 0.12, size: 1 });
+      return;
+    }
+    if (P.solidAt(room, x, y)) return;
+    G.fx.particle(x, y, (Math.random() - 0.5) * A.vx * 4, A.vy * (0.5 + Math.random()), A.col, A.life, { glow: A.glow, drag: 1, size: 1 });
+    if (A.pages && Math.random() < A.pages) G.fx.particle(x, g.camy - 4, 0.3, 0.35, '#efe2c0', 400, { size: 2, drag: 1 });
+  }
 
   // ---- draw --------------------------------------------------------------------------------------------------
   g.draw = function () {

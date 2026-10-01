@@ -222,24 +222,20 @@
       if (this.boss) {
         g.endBoss(this);
         const rw = d.reward || {};
-        const cx = this.cx, cy = Math.min(this.cy, this.fy - 24);
+        // rewards appear where the boss fell and drop to the floor (always reachable)
+        const room = g.room;
+        const cx = U.clamp(this.cx, 48, room.pw - 48), cy = U.clamp(Math.min(this.cy, this.fy - 24), 40, room.ph - 40);
         g.later(70, () => {
-          (rw.items || []).forEach((id, i) => {
-            const e = G.dropPickup(g, 'item:' + id, cx + (i - ((rw.items.length - 1) / 2)) * 22, cy);
+          const drop = (id, x) => {
+            const e = G.dropPickup(g, 'item:' + id, x, cy);
             if (e) {
-              e.static = true;
               e.life = -1;
-              e.vy = 0;
+              e.vy = -2;
+              e.t = -30;
             }
-          });
-          if (rw.relic && !G.hasRelic(s, rw.relic)) {
-            const e = G.dropPickup(g, 'item:' + rw.relic, cx, cy);
-            if (e) {
-              e.static = true;
-              e.life = -1;
-              e.vy = 0;
-            }
-          }
+          };
+          (rw.items || []).forEach((id, i) => drop(id, cx + (i - (rw.items.length - 1) / 2) * 22));
+          if (rw.relic && !G.hasRelic(s, rw.relic)) drop(rw.relic, cx);
           if (rw.scene) G.story.play(rw.scene);
         });
       }
@@ -305,7 +301,21 @@
       if (root.console && !G._warned) console.warn('Unknown enemy ' + sp.id);
       return null;
     }
-    if (def.boss && G.state.flags['boss_' + sp.id]) return null;
+    if (def.boss && G.state.flags['boss_' + sp.id]) {
+      // the boss is gone; re-offer essential rewards the player never picked up
+      const rw = def.reward || {};
+      const need = [];
+      if (rw.relic && !G.hasRelic(G.state, rw.relic)) need.push(rw.relic);
+      (rw.items || []).forEach((id) => {
+        const it = G.ITEMS[id];
+        if (it && it.kind === 'key' && !G.invCount(G.state, id)) need.push(id);
+      });
+      need.forEach((id, i) => {
+        const e = G.dropPickup(g, 'item:' + id, sp.x + i * 22, sp.y - 30);
+        if (e) e.life = -1;
+      });
+      return null;
+    }
     if (sp.flag && G.state.flags[sp.flag]) return null;
     const Cls = def.cls || Enemy;
     return new Cls(def, sp, g);

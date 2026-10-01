@@ -184,8 +184,17 @@
       super(Object.assign({ w: 10, h: 10, life: -1, grav: 0.2, bounce: 0 }, o));
       this.z = 2;
     }
+    buried(g) {
+      // items hidden inside a breakable block stay invisible until the block breaks
+      if (!this.hiddenInWall) return false;
+      const t = g.room.get(Math.floor(this.cx / 16), Math.floor(this.cy / 16));
+      if (t === G.T.BREAK) return true;
+      this.hiddenInWall = false;
+      return false;
+    }
     update(g) {
       this.t++;
+      if (this.buried(g)) return;
       if (!this.static) {
         if (this.float) {
           this.vy = U.approach(this.vy, 0.5, 0.03);
@@ -311,7 +320,7 @@
       if (it.kind === 'key') G.ui.banner(G.tr(it.name), G.tr(it.desc), '#e8d8b0', 240);
     }
     draw(ctx, camx, camy) {
-      if (this.blink()) return;
+      if (this.blink() || this.hiddenInWall) return;
       const it = this.id === 'hp_up' ? { icon: 'heart', col: '#ff4050' } : this.id === 'heart_up' ? { icon: 'heart', col: '#ff80c0' } : this.id === 'mp_up' ? { icon: 'relic', col: '#6080ff' } : G.ITEMS[this.id];
       if (!it) return;
       const img = G.itemIcon(it);

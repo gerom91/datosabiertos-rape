@@ -170,29 +170,44 @@
 
     // ---- cape (behind everything) ----
     if (cape && cape.length > 2) {
+      // outer edge = simulated chain; inner edge hugs the back of the body
+      const n = cape.length;
+      const outer = cape;
+      const inner = [];
+      for (let i = 0; i < n; i++) {
+        const p = outer[i];
+        const k = i / (n - 1);
+        const backX = hx - 3.5 + sl * (1 - k) * 10; // follows the lean of the torso
+        const ix = Math.max(p.x + 3 + k * 4, Math.min(backX, p.x + 9));
+        inner.push({ x: ix, y: p.y - 0.5 });
+      }
       ctx.fillStyle = capeOuter;
       ctx.beginPath();
-      ctx.moveTo(neckX + 1, neckY + 1);
-      ctx.lineTo(shX - 3, shY);
-      for (const p of cape) ctx.lineTo(p.x, p.y);
-      const last = cape[cape.length - 1];
-      ctx.lineTo(Math.min(last.x + 4, hx + 2), Math.max(last.y - 2, hy + 6));
-      ctx.lineTo(hx - 2, hy + 2);
+      ctx.moveTo(neckX + 1.5, neckY);
+      ctx.lineTo(shX - 2.5, shY - 0.5);
+      for (const p of outer) ctx.lineTo(p.x, p.y);
+      for (let i = n - 1; i >= 1; i--) ctx.lineTo(inner[i].x, inner[i].y);
+      ctx.lineTo(hx + 2, hy - 6);
       ctx.closePath();
       ctx.fill();
-      // red lining along the trailing edge
+      // crimson lining revealed along the trailing edge (wider when it billows)
+      const spread = Math.abs(outer[n - 1].x - inner[n - 1].x);
       ctx.strokeStyle = capeInner;
-      ctx.lineWidth = 2.2;
       ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.lineWidth = spread > 9 ? 3 : 2.2;
       ctx.beginPath();
-      ctx.moveTo(cape[1].x + 0.8, cape[1].y);
-      for (let i = 2; i < cape.length; i++) ctx.lineTo(cape[i].x + 0.8, cape[i].y - 0.5);
+      ctx.moveTo(outer[1].x + 1, outer[1].y);
+      for (let i = 2; i < n; i++) ctx.lineTo(outer[i].x + 1, outer[i].y - 0.4);
       ctx.stroke();
+      // a fold highlight
       ctx.strokeStyle = col.capeOH;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(shX - 2, shY + 2);
-      ctx.lineTo(cape[Math.min(3, cape.length - 1)].x + 3, cape[Math.min(3, cape.length - 1)].y);
+      const m = Math.min(3, n - 1);
+      ctx.moveTo(shX - 1.5, shY + 2);
+      ctx.lineTo((outer[m].x + inner[m].x) / 2, outer[m].y);
+      ctx.lineTo((outer[n - 2].x + inner[n - 2].x) / 2, outer[n - 2].y);
       ctx.stroke();
     }
     // ---- hair (behind head) ----

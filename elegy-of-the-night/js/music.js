@@ -499,7 +499,7 @@
         Cc = cell4('C4', 'G4', 'E4', 'G4'), Fc = cell4('C4', 'A4', 'F4', 'A4');
     var OST_A = bars('@0.25', [Bm, Bm, Gc, Gc, Em, Fs, Bm, Fs]);
     var OST_C = bars('@0.25', [Bm, Cc, Bm, Cc, Em, Fc, Fs, Fs]);
-    function bq(r) { return r + "1' " + r + "2' " + r + "1' " + r + "2'"; }
+    function bq(r) { var o = (r === 'B' || r === 'A#') ? 1 : 2; return r + o + "' " + r + (o + 1) + "' " + r + o + "' " + r + (o + 1) + "'"; }
     var BASS_A = bars('@1', [bq('B'), bq('B'), bq('G'), bq('G'), bq('E'), bq('F#'), bq('B'), bq('F#')]);
     var BASS_C = bars('@1', [bq('B'), bq('C'), bq('B'), bq('C'), bq('E'), bq('F'), bq('F#'), bq('F#')]);
     function stab(c) { return c + "'! . . " + c + "' . . . ."; }
@@ -522,7 +522,7 @@
         A: { bars: 8, ost: OST_A, bass: BASS_A, dr: { step: 0.25, w: TT.w, u: TT.u } },
         B: { bars: 8, ost: OST_A, bass: BASS_A, brs: BRS_B, mel: MEL, dr: { step: 0.25, w: TT.w, u: TT.u, a: pad('x', 32) } },
         C: { bars: 8, ost: OST_C, bass: BASS_C, brs: BRS_C, mel: '@4 B4 | C5 | B4 | C5 | E5 | F5 | F#5 | F#5 |',
-          dr: { step: 0.25, w: TT.w, u: TT.u, l: 'oooooooooooooooo', k: 'x...x...x...x...', z: pad('', 116) + 'x...........' } },
+          dr: { step: 0.25, w: TT.w, u: TT.u, l: 'oooooooooooooooo', k: 'x...x...x...x...', z: hits(128, [113]) } },
         D: { bars: 8, ost: OST_A, bass: BASS_A, brs: BRS_B, mel: MEL, hpsi: MEL,
           dr: dsec(8, { w: TT.w, u: TT.u, k: 'X.....x.X.......', s: '....X.......X...', l: 'o.o.o.o.o.o.o.o.' },
             { w: TT.w, k: 'X.....x.X.......', s: '....X...X.XXXXXX' }, 0.25, true) }
@@ -562,3 +562,399 @@
     order: ['A', 'B']
   };
 
+  // rock riff helpers: 3+3+2 accented 8ths
+  function gr(c) { return c + "'! " + c + "' " + c + "' " + c + "'! " + c + "' " + c + "' " + c + "'! " + c + "'"; }
+  var ROCK = { k: 'X.x.X.x.X.x.X.x.', s: '....X.......X...', h: 'x.x.x.x.x.x.x.x.' };
+  var FILL = { k: 'X.....x.X.......', s: '....X...XX......', m: '..........XX....', t: '............XXXX', h: 'X.x.X.x.........' };
+
+  // ======================================================================
+  // 11. CHAPEL — "Vespers for the Forsaken"  A minor <-> C major, 76 BPM
+  // ======================================================================
+  (function () {
+    var ORG_A = '@4 A3+C4+E4 | A3+D4+F4 | G#3+B3+E4 | A3+C4+E4 | A3+C4+F4 | G3+C4+E4 | A3+D4+F4 | G#3+B3+E4 |';
+    var PED_A = '@4 A2 | F2 | E2 | A2 | F2 | E2 | D2 | E2 |';
+    var CHO_A = '@1 A4+C5*2 G#4+B4 A4+C5 | A4+D5*2 D5+F5*2 | B4+E5*3 G#4+D5 | A4+C5*4 | A4+C5*2 A4+D5 A4+C5 | C5+E5*2 B4+D5 G4+C5 | D5+F5*2 C5+E5 A4+D5 | B4+E5*2 G#4+D5*2 |';
+    T.chapel = {
+      name: 'Vespers for the Forsaken', bpm: 76, meter: 4, vol: 1, hum: [0.006, 0.06],
+      parts: {
+        org: { i: 'organ_soft', v: 0.9, p: -0.1, vel: 0.75 },
+        ped: { i: 'organ_pedal', v: 0.8 },
+        cho: { i: 'choir', v: 0.8, p: 0.15, vel: 0.75 },
+        bel: { i: 'bell', v: 0.35, p: 0.4 },
+        str: { i: 'strings', v: 0.4, p: 0.3, vel: 0.5 },
+        cel: { i: 'celesta', v: 0.25, p: -0.4, vel: 0.5, fx: { echo: [1.5, 0.35, 0.35] } }
+      },
+      sections: {
+        A: { bars: 8, org: ORG_A, ped: PED_A, cho: CHO_A, bel: '@4 A4 .*7 |' },
+        B: { bars: 8,
+          org: '@4 G3+C4+E4 | G3+B3+D4 | A3+C4+E4 | G3+B3+E4 | A3+C4+F4 | G3+C4+E4 | A3+C4+F4 | G3+B3+D4 |',
+          ped: '@4 C3 | B2 | A2 | G2 | F2 | E2 | D2 | G2 |',
+          cho: '@1 C5+E5*2 B4+D5 A4+C5 | B4+D5*2 D4+G4*2 | A4+C5*2 G4+B4 E4+A4 | G4+B4*2 B4+E5*2 | A4+F5*2 C5+E5 A4+D5 | C5+E5*2 G4+C5*2 | A4+D5*2 A4+C5 F4+A4 | G4+B4*2 B4+D5*2 |',
+          str: '@4 E5 | D5 | C5 | B4 | A4 | G4 | F4 | G4 |' },
+        A2: { bars: 8, org: ORG_A, ped: PED_A, cho: 't-12 ' + CHO_A,
+          bel: '@4 C6 | D6 | E6 | C6 | C6 | E6 | F6 | E6 |',
+          str: '@4 C5+E5 | D5+F5 | B4+E5 | C5+E5 | C5+F5 | C5+E5 | D5+F5 | B4+E5 |',
+          cel: '@1 . . E6 . | .*4 | . . B5 . | .*4 | . . A5 . | .*4 | . . F5 . | . . G#5 . |' }
+      },
+      order: ['A', 'B', 'A2']
+    };
+  })();
+
+  // ======================================================================
+  // 12. KEEP — "Throne of Thorns"  C minor, 140 BPM
+  // ======================================================================
+  (function () {
+    var R1 = "C3+C4! C4' G3' C4' Eb4 D4 C4 G3", R2 = "Ab2+Ab3! Ab3' Eb3' Ab3' C4 Bb3 Ab3 Eb3", R3 = "F2+F3! F3' C3' F3' Ab3 G3 F3 C3",
+        R4 = "G2+G3! G3' D3' G3' B3 C4 D4 B3", R6 = "Bb2+Bb3! Bb3' F3' Bb3' D4 C4 Bb3 F3", R8 = "G2+G3! G3' D3' G3' B3 D4 F4 G4";
+    var RIFF = bars('@0.5', [R1, R2, R3, R4, R1, R6, R2, R8]);
+    var BASS = bars('@0.5', [b8('C2', 'C3'), b8('Ab1', 'Ab2'), b8('F2', 'F3'), b8('G1', 'G2'), b8('C2', 'C3'), b8('Bb1', 'Bb2'), b8('Ab1', 'Ab2'), b8('G1', 'G2', 'B1')]);
+    var RUN = "@0.25 .*8 G4 Ab4 B4 C5 D5 Eb5 F5 G5";
+    var KB = { k: 'X.x...x.X.x...x.', s: '....X.......X...', h: 'x.x.x.x.x.x.x.x.' };
+    T.keep = {
+      name: 'Throne of Thorns', bpm: 140, meter: 4, vol: 1, hum: [0.003, 0.05],
+      parts: {
+        org:  { i: 'organ_full', v: 0.75, p: 0.1 },
+        lead: { i: 'brass', v: 0.9, p: -0.1 },
+        ld2:  { i: 'organ_lead', v: 0.75, p: 0.05 },
+        run:  { i: 'strings_stac', v: 0.8, p: -0.3 },
+        pad:  { i: 'strings', v: 0.5, p: 0.3, vel: 0.6 },
+        bass: { i: 'bass', v: 0.9 },
+        cho:  { i: 'choir', v: 0.7, p: -0.2 },
+        tim:  { i: 'timpani', v: 0.8 },
+        dr:   { kit: 1, v: 0.85 }
+      },
+      sections: {
+        I: { bars: 2, org: '@4 C3+G3+C4*2 |',
+          tim: '@0.25 v.35 ' + rep('C3', 8) + ' v.5 ' + rep('C3', 8) + ' | v.7 ' + rep('C3', 8) + ' v.9 ' + rep('C3', 8) + ' |' },
+        A: { bars: 8, org: RIFF, bass: BASS, dr: dsec(8, KB, FILL, 0.25, true) },
+        B: { bars: 8, org: RIFF, bass: BASS,
+          lead: '@0.5 C5*3 D5 Eb5*2 G5*2 | Ab5*4 G5*2 Eb5*2 | F5*3 G5 Ab5*2 C6*2 | B5*6 G5*2 | C6*4 Bb5*2 G5*2 | Bb5*3 Ab5 G5*2 F5*2 | Eb5*4 C5*2 Ab4*2 | B4*4 D5*2 G5*2 |',
+          run: '@4 . | . | . | ' + RUN + ' | @4 . | . | . | ' + RUN + ' |',
+          dr: dsec(8, KB, FILL, 0.25, true) },
+        C: { bars: 8,
+          org: '@2 G3+C4+Eb4 G3+C4+Eb4 | Ab3+C4+Eb4 Ab3+C4+Eb4 | Bb3+D4+F4 Bb3+D4+F4 | G3+Bb3+Eb4 G3+Bb3+Eb4 | Ab3+C4+F4 Ab3+C4+F4 | Ab3+C4+Eb4 Ab3+C4+Eb4 | Ab3+D4+F4 Ab3+D4+F4 | G3+B3+D4 G3+B3+D4 |',
+          cho: '@4 Eb4+G4 | Eb4+Ab4 | F4+Bb4 | Eb4+G4 | F4+Ab4 | Eb4+Ab4 | F4+Ab4 | D4+G4 |',
+          ld2: '@0.5 G5*6 F5 Eb5 | Eb5*4 C5*4 | D5*6 Eb5 F5 | G5*8 | Ab5*4 G5*2 F5*2 | Eb5*4 C5*2 Eb5*2 | D5*4 F5*2 Ab5*2 | G5*6 F5 D5 |',
+          pad: '@4 C4+Eb4 | C4+Eb4 | D4+F4 | Bb3+Eb4 | C4+F4 | C4+Eb4 | D4+F4 | B3+D4 |',
+          bass: bars('@0.5', [b8('C2', 'C3'), b8('Ab1', 'Ab2'), b8('Bb1', 'Bb2'), b8('Eb2', 'Eb3'), b8('F2', 'F3'), b8('Ab1', 'Ab2'), b8('D2', 'D3'), b8('G1', 'G2')]),
+          tim: '@4 C3 | Ab2 | Bb2 | Eb3 | F2 | Ab2 | D3 | G2 |',
+          dr: dsec(8, ROCK, FILL, 0.25, true) },
+        D: { bars: 8,
+          org: bars('@0.5', [rep('C4 Eb4 G4 C5 G4 Eb4 C4 G3', 1), 'C4 Eb4 G4 C5 G4 Eb4 C4 G3', 'C4 Eb4 Ab4 C5 Ab4 Eb4 C4 Ab3', 'C4 Eb4 Ab4 C5 Ab4 Eb4 C4 Ab3',
+            'C4 F4 Ab4 C5 Ab4 F4 C4 Ab3', 'C4 F4 Ab4 C5 Ab4 F4 C4 Ab3', 'B3 D4 G4 B4 G4 D4 B3 G3', 'B3 D4 G4 B4 D5 F5 G5 B5']),
+          bass: bars('@0.5', [b8('C2', 'C3'), b8('C2', 'C3'), b8('Ab1', 'Ab2'), b8('Ab1', 'Ab2'), b8('F2', 'F3'), b8('F2', 'F3'), b8('G1', 'G2'), b8('G1', 'G2', 'B1')]),
+          dr: dsec(8, { k: 'X.......X.......', t: 'x..x..x.....x...', m: '......x...x.....', h: 'x.x.x.x.x.x.x.x.' },
+            { s: 'X.X.X.X.XXXXXXXX', k: 'X...X...X...X...' }, 0.25, true) }
+      },
+      intro: ['I'], order: ['A', 'B', 'C', 'D']
+    };
+  })();
+
+  // ======================================================================
+  // 13. BOSS — "Crimson Duel"  D minor, 160 BPM
+  // ======================================================================
+  (function () {
+    var GA = bars('@0.5', [gr('D3+A3'), gr('D3+A3'), gr('Bb2+F3'), gr('C3+G3'), gr('D3+A3'), gr('D3+A3'), gr('Eb3+Bb3'), gr('A2+E3')]);
+    var BA = bars('@0.5', [gr('D2'), gr('D2'), gr('Bb1'), gr('C2'), gr('D2'), gr('D2'), gr('Eb2'), gr('A1')]);
+    var GB = bars('@0.5', [gr('D3+A3'), gr('Bb2+F3'), gr('G2+D3'), gr('A2+E3'), gr('D3+A3'), gr('Bb2+F3'), gr('Eb3+Bb3'), gr('A2+E3')]);
+    var BB = bars('@0.5', [gr('D2'), gr('Bb1'), gr('G1'), gr('A1'), gr('D2'), gr('Bb1'), gr('Eb2'), gr('A1')]);
+    var MEL_B = '@0.5 D4*3 F4*3 A4*2 | Bb4*3 A4*3 F4*2 | G4*3 Bb4*3 D5*2 | C#5*6 A4*2 | D5*3 C5*3 A4*2 | Bb4*3 A4*3 G4*2 | G4*3 Bb4*3 Eb5*2 | E5*4 C#5*2 A4*2 |';
+    var OST = bars('@0.25', [cell4('D4', 'A4', 'F4', 'A4'), cell4('E4', 'C5', 'G4', 'C5'), cell4('D4', 'Bb4', 'F4', 'Bb4'), cell4('C#4', 'A4', 'E4', 'A4'),
+                             cell4('D4', 'Bb4', 'G4', 'Bb4'), cell4('C#4', 'A4', 'E4', 'A4'), cell4('D4', 'A4', 'F4', 'A4'), cell4('C#4', 'A4', 'E4', 'G4')]);
+    var MEL_C = '@0.5 A5*2 G#5*2 A5*2 F5*2 | G5*2 F#5*2 G5*2 E5*2 | F5*2 E5*2 F5*2 D5*2 | E5*4 C#5*4 | D5*2 Eb5*2 D5*2 Bb4*2 | C#5*2 D5*2 E5*2 G5*2 | F5*2 E5*2 D5*2 A5*2 | C#5*4 E5*4 |';
+    function st(c) { return c + "'! . . " + c + "'! . . " + c + "' ."; }
+    var ORG_C = bars('@0.5', [st('D4+F4+A4'), st('C4+E4+G4'), st('Bb3+D4+F4'), st('A3+C#4+E4'), st('Bb3+D4+G4'), st('A3+C#4+E4'), st('A3+D4+F4'), st('A3+C#4+E4')]);
+    var GC = bars('@0.5', [gr('D3+A3'), gr('C3+G3'), gr('Bb2+F3'), gr('A2+E3'), gr('G2+D3'), gr('A2+E3'), gr('D3+A3'), gr('A2+E3')]);
+    var BC = bars('@0.5', [gr('D2'), gr('C2'), gr('Bb1'), gr('A1'), gr('G1'), gr('A1'), gr('D2'), gr('A1')]);
+    var HTB = { k: 'X.........X.....', s: '........X.......', T: 'X..X..X.........', h: 'x...x...x...x...' };
+    function tp(n) { return n + "! . . " + n + " . . " + n + " ."; }
+    T.boss = {
+      name: 'Crimson Duel', bpm: 160, meter: 4, vol: 1, hum: [0.002, 0.05],
+      parts: {
+        gtr:  { i: 'guitar', v: 0.65, p: -0.3 },
+        bass: { i: 'bass', v: 0.95 },
+        org:  { i: 'organ_full', v: 0.6, p: 0.15, vel: 0.75 },
+        ost:  { i: 'strings_stac', v: 0.7, p: 0.3, vel: 0.7 },
+        brs:  { i: 'brass', v: 0.95, p: -0.1 },
+        vln:  { i: 'violins', v: 0.85, p: -0.2 },
+        cho:  { i: 'choir', v: 0.7 },
+        tim:  { i: 'timpani', v: 0.85 },
+        dr:   { kit: 1, v: 0.9 }
+      },
+      sections: {
+        I: { bars: 2, gtr: '@4 D3+A3+D4*2 |', dr: { step: 0.25, s: 'o.o.o.o.x.x.x.x.XXXXXXXXXXXXXXXX' },
+          tim: '@0.25 v.4 ' + rep('D2', 16) + ' | v.8 ' + rep('A1', 16) + ' |' },
+        A: { bars: 8, gtr: GA, bass: BA, org: '@4 D4+F4+A4 | . | D4+F4+Bb4 | E4+G4+C5 | D4+F4+A4 | . | Eb4+G4+Bb4 | C#4+E4+A4 |',
+          dr: dsec(8, ROCK, FILL, 0.25, true) },
+        B: { bars: 8, gtr: GB, bass: BB, brs: MEL_B,
+          vln: '@4 . | . | . | . | t12 @0.5 D4*3 C4*3 A3*2 | Bb3*3 A3*3 G3*2 | G3*3 Bb3*3 Eb4*2 | E4*4 C#4*2 A3*2 |',
+          tim: '@4 D2 | . | . | A1 | D2 | . | . | A1 |', dr: dsec(8, ROCK, FILL, 0.25, true) },
+        C: { bars: 8, ost: OST, org: ORG_C, vln: MEL_C, bass: BC, gtr: GC, dr: dsec(8, ROCK, FILL, 0.25, true) },
+        D: { bars: 8, cho: '@4 D4+F4+A4 | D4+F4+Bb4 | D4+G4+Bb4 | C#4+E4+A4 |', gtr: '@4 D3+A3 | Bb2+F3 | G2+D3 | A2+E3 |',
+          bass: '@4 D2 | Bb1 | G1 | A1 |', brs: '@2 A4 D5 | Bb4 F5 | G4 D5 | C#5 E5 |',
+          tim: bars('@0.5', [tp('D2'), tp('D2'), tp('D2'), tp('A1')]), dr: dsec(8, HTB, FILL, 0.25, true) }
+      },
+      intro: ['I'], order: ['A', 'B', 'C', 'D']
+    };
+  })();
+
+  // ======================================================================
+  // 14. FINAL BOSS — "Requiem for the Last Hunter"  E Phrygian / minor, 150 BPM
+  // ======================================================================
+  (function () {
+    var GA = bars('@0.5', [gr('E3+B3'), gr('F3+C4'), gr('E3+B3'), gr('F3+C4'), gr('G3+D4'), gr('F3+C4'), gr('D3+A3'), gr('E3+B3')]);
+    var BA = bars('@0.5', [gr('E2'), gr('F2'), gr('E2'), gr('F2'), gr('G2'), gr('F2'), gr('D2'), gr('E2')]);
+    var ORG_A = '@0.5 E5*3 F5*3 E5*2 | D5*3 C5*3 A4*2 | E5*3 F5*3 G5*2 | A5*4 F5*4 | G5*3 A5*3 B5*2 | C6*4 A5*4 | F5*3 E5*3 D5*2 | E5*8 |';
+    var CHO_B = '@1 C5+E5*3 B4+D5 | A4+C5*2 F4+A4*2 | G4+B4*2 B4+D5*2 | B4+E5*4 | C5+E5*3 E5+G5 | C5+F5*2 C5+E5 A4+C5 | A4+D5*2 D5+F5*2 | G#4+E5*4 |';
+    var SOP_B = '@1 E5*3 D5 | C5*2 A4*2 | B4*2 D5*2 | E5*4 | E5*3 G5 | F5*2 E5 C5 | D5*2 F5*2 | E5*4 |';
+    var ORG_B = '@4 A3+C4+E4 | A3+C4+F4 | G3+B3+D4 | G3+B3+E4 | A3+C4+E4 | A3+C4+F4 | A3+D4+F4 | G#3+B3+E4 |';
+    var BASS_B = bars('@0.5', [b8('A1', 'A2'), b8('F2', 'F3'), b8('G2', 'G3'), b8('E2', 'E3'), b8('A1', 'A2'), b8('F2', 'F3'), b8('D2', 'D3'), b8('E2', 'E3')]);
+    var GB = bars('@0.5', [gr('A2+E3'), gr('F2+C3'), gr('G2+D3'), gr('E2+B2'), gr('A2+E3'), gr('F2+C3'), gr('D3+A3'), gr('E3+B3')]);
+    var STR_C = bars('@0.25', [cell4('E4', 'B4', 'G4', 'B4'), cell4('E4', 'C5', 'G4', 'C5'), cell4('F#4', 'D5', 'A4', 'D5'), cell4('D#4', 'B4', 'F#4', 'B4'),
+                               cell4('E4', 'B4', 'G4', 'B4'), cell4('E4', 'C5', 'G4', 'C5'), cell4('E4', 'C5', 'A4', 'C5'), cell4('D#4', 'B4', 'F#4', 'B4')]);
+    var BRS_C = '@0.5 B4*3 E5*3 G5*2 | G5*4 E5*4 | F#5*3 A5*3 D5*2 | D#5*8 | E5*3 G5*3 B5*2 | C6*4 G5*4 | A5*3 C6*3 E5*2 | D#5*4 F#5*4 |';
+    var GC = bars('@0.5', [gr('E3+B3'), gr('C3+G3'), gr('D3+A3'), gr('B2+F#3'), gr('E3+B3'), gr('C3+G3'), gr('A2+E3'), gr('B2+F#3')]);
+    var BC = bars('@0.5', [gr('E2'), gr('C2'), gr('D2'), gr('B1'), gr('E2'), gr('C2'), gr('A1'), gr('B1')]);
+    var Am = 'A3 C4 E4 A4 C5 A4 E4 C4', Fc = 'F3 A3 C4 F4 A4 F4 C4 A3', Dm = 'D3 F3 A3 D4 F4 D4 A3 F3', Ec = 'E3 G#3 B3 E4 G#4 E4 B3 G#3', Gc = 'G3 B3 D4 G4 B4 G4 D4 B3';
+    var ARP_D = bars('@0.25', [Am + ' ' + Am, Fc + ' ' + Fc, Dm + ' ' + Dm, Ec + ' ' + Ec, Am + ' ' + Am, Fc + ' ' + Fc, Gc + ' ' + Gc, Ec + ' ' + Ec]);
+    T.boss_final = {
+      name: 'Requiem for the Last Hunter', bpm: 150, meter: 4, vol: 1, hum: [0.002, 0.05],
+      parts: {
+        org:  { i: 'organ_full', v: 0.7, p: 0.1 },
+        arp:  { i: 'organ_lead', v: 0.6, p: 0.25, vel: 0.7 },
+        cho:  { i: 'choir', v: 0.85, p: -0.1 },
+        gtr:  { i: 'guitar', v: 0.6, p: -0.3 },
+        bass: { i: 'bass', v: 0.95 },
+        str:  { i: 'strings_stac', v: 0.7, p: 0.3, vel: 0.7 },
+        brs:  { i: 'brass', v: 0.9, p: -0.15 },
+        tim:  { i: 'timpani', v: 0.85 },
+        bel:  { i: 'bell_deep', v: 0.5, p: 0.3 },
+        dr:   { kit: 1, v: 0.9 }
+      },
+      sections: {
+        I: { bars: 4, org: '@4 E3+B3+E4 | F3+A3+C4 | E3+B3+E4 | F3+A3+C4 |', cho: '@4 E4+B4 | F4+C5 | E4+B4 | F4+A4+C5 |', bel: '@4 E4 | F4 | E4 | F4 |',
+          tim: '@0.25 v.4 ' + rep('E2', 16) + ' | v.5 ' + rep('E2', 16) + ' | v.6 ' + rep('E2', 16) + ' | v.75 ' + rep('E2', 8) + ' v1 ' + rep('E2', 8) + ' |',
+          dr: { step: 0.25, z: hits(64, [48]), s: pad('', 48) + 'oooxxxxXXXXXXXXX' } },
+        A: { bars: 8, gtr: GA, bass: BA, org: ORG_A, dr: dsec(8, ROCK, FILL, 0.25, true) },
+        B: { bars: 8, cho: CHO_B, org: ORG_B, bass: BASS_B, bel: '@4 A3 | F3 | G3 | E3 | A3 | F3 | D3 | E3 |',
+          dr: dsec(8, { k: 'X.......X.x.....', s: '....X.......X...', r: 'x.x.x.x.x.x.x.x.' }, FILL, 0.25, true) },
+        C: { bars: 8, str: STR_C, brs: BRS_C, gtr: GC, bass: BC, dr: dsec(8, ROCK, FILL, 0.25, true) },
+        D: { bars: 8, arp: ARP_D, cho: '@4 A4+C5+E5 | A4+C5+F5 | A4+D5+F5 | G#4+B4+E5 | A4+C5+E5 | A4+C5+F5 | G4+B4+D5 | G#4+B4+E5 |',
+          bass: '@4 A1 | F2 | D2 | E2 | A1 | F2 | G2 | E2 |',
+          tim: '@4 A2 | F2 | D2 | E2 | A2 | F2 | G2 | @0.25 v.5 ' + rep('E2', 8) + ' v.9 ' + rep('E2', 8) + ' |',
+          dr: { step: 1, b: pad('x', 32), z: hits(32, [28]) } },
+        E: { bars: 8, cho: CHO_B, brs: 't-12 ' + SOP_B, org: ORG_B, gtr: GB, bass: BASS_B, bel: '@4 A4 | . | . | . | A4 | . | . | E4 |',
+          dr: dsec(8, ROCK, FILL, 0.25, true) }
+      },
+      intro: ['I'], order: ['A', 'B', 'C', 'D', 'E']
+    };
+  })();
+
+  // ======================================================================
+  // 15. SAVE — "Sanctuary Light"  Bb major, 60 BPM (calm choir loop)
+  // ======================================================================
+  T.save = {
+    name: 'Sanctuary Light', bpm: 60, meter: 4, vol: 1, hum: [0.006, 0.05],
+    parts: {
+      cho: { i: 'choir', v: 0.8, vel: 0.7 },
+      org: { i: 'organ_soft', v: 0.6, p: -0.15, vel: 0.65 },
+      gl:  { i: 'glass', v: 0.5, p: 0.3, vel: 0.6 },
+      str: { i: 'strings', v: 0.4, p: 0.25, vel: 0.5 }
+    },
+    sections: {
+      A: { bars: 8,
+        cho: '@4 D4+F4+Bb4 | D4+F4+A4 | Eb4+G4+Bb4 | D4+F4+Bb4 | D4+G4+Bb4 | Eb4+G4+Bb4 | Eb4+Gb4+Bb4 | C4+F4+A4 |',
+        org: '@4 Bb2+F3 | D3+A3 | Eb3+Bb3 | Bb2+F3 | G2+D3 | Eb3+Bb3 | Eb3+Bb3 | F2+C3 |',
+        gl: '@2 F5 . | A5 . | G5 . | F5 D5 | Bb5 . | G5 . | Gb5 . | A5 . |',
+        str: '@4 . | . | . | . | D5 | Eb5 | Eb5 | C5 |' }
+    },
+    order: ['A']
+  };
+
+  // ======================================================================
+  // 16. SHOP — "The Librarian's Curios"  F major, 100 BPM
+  // ======================================================================
+  (function () {
+    var MEL_A = '@0.5 C5*2 A4 C5 F5*2 E5 D5 | C5*2 G4 C5 E5*2 D5 C5 | D5*2 F5 D5 A4*2 F4 A4 | Bb4*2 D5 F5 D5*2 C5 Bb4 | A4*2 C5 F5 A5*2 G5 F5 | E5*2 G5 E5 C5*2 D5 E5 | F5*2 E5 D5 C5 A4 F4 A4 | G4*2 Bb4*2 C5*2 . . |';
+    var MEL_B = '@0.5 D5*3 C5 Bb4*2 D5*2 | E5*3 D5 C5*2 E5*2 | C5*2 E5 A5 G5*2 E5*2 | F5*4 A4*2 D5*2 | Bb4*2 D5 G5 F5*2 D5*2 | E5*2 G5 C6 Bb5*2 G5*2 | A5*2 G5 F5 C5*2 A4*2 | G4 A4 Bb4 C5 E5*2 . . |';
+    var ACC_A = bars('@0.5', [alb8('F3', 'A3', 'C4'), alb8('E3', 'G3', 'C4'), alb8('D3', 'F3', 'A3'), alb8('D3', 'F3', 'Bb3'), alb8('C3', 'F3', 'A3'), alb8('C3', 'E3', 'G3'), alb8('F3', 'A3', 'C4'), alb8('E3', 'Bb3', 'C4')]);
+    var ACC_B = bars('@0.5', [alb8('D3', 'F3', 'Bb3'), alb8('E3', 'G3', 'C4'), alb8('E3', 'A3', 'C4'), alb8('D3', 'F3', 'A3'), alb8('D3', 'G3', 'Bb3'), alb8('E3', 'G3', 'C4'), alb8('F3', 'A3', 'C4'), alb8('E3', 'Bb3', 'C4')]);
+    var PZ_A = '@1 F2 . C3 . | E2 . G2 . | D2 . A2 . | Bb1 . F2 . | C2 . F2 . | C2 . G2 . | F2 . C3 . | C2 . E2 . |';
+    var PZ_B = '@1 Bb1 . F2 . | C2 . G2 . | A1 . E2 . | D2 . A2 . | G1 . D2 . | C2 . G2 . | F2 . C3 . | C2 . Bb1 . |';
+    var DR = { step: 0.5, y: 'xoxoxoxo', i: pad('o', 32) };
+    T.shop = {
+      name: "The Librarian's Curios", bpm: 100, meter: 4, vol: 1, hum: [0.007, 0.08],
+      parts: {
+        hpsi: { i: 'harpsichord', v: 0.8, p: 0.15 },
+        acc:  { i: 'harpsichord', v: 0.42, p: -0.3, vel: 0.6 },
+        pz:   { i: 'pizz', v: 0.9, p: -0.05 },
+        fl:   { i: 'flute', v: 0.6, p: 0.3 },
+        dr:   { kit: 1, v: 0.55 }
+      },
+      sections: {
+        A:  { bars: 8, hpsi: MEL_A, acc: ACC_A, pz: PZ_A, dr: DR },
+        B:  { bars: 8, hpsi: MEL_B, acc: ACC_B, pz: PZ_B, dr: DR },
+        A2: { bars: 8, fl: MEL_A, acc: ACC_A, pz: PZ_A, hpsi: '@4 . | . | . | . | F5 | E5 | F5 | E5 |', dr: DR }
+      },
+      order: ['A', 'B', 'A2']
+    };
+  })();
+
+  // ======================================================================
+  // 17. GAME OVER — "Dust Returns to Dust"  D minor, 60 BPM, ~8 s, NOT looping
+  // ======================================================================
+  T.gameover = {
+    name: 'Dust Returns to Dust', bpm: 60, meter: 4, vol: 1, loop: false, hum: [0.004, 0.04],
+    parts: {
+      org: { i: 'organ', v: 0.8, vel: 0.75 },
+      vc:  { i: 'cello', v: 0.8, p: 0.2, vel: 0.75 },
+      cb:  { i: 'contrabass', v: 0.8, vel: 0.8 }
+    },
+    sections: {
+      A: { bars: 2,
+        org: '@1 A3+D4+F4*2 Bb3+D4+G4 A3+C#4+E4 | A3+D4+F4*4 |',
+        vc: '@1 D3*2 G2 A2 | D3*4 |',
+        cb: '@1 D2*2 G1 A1 | D2*4 |' }
+    },
+    order: ['A']
+  };
+
+  // ======================================================================
+  // 18. ENDING — "Lantern at Dawn"  D minor -> F major, 12/8, 72 BPM
+  //     (B section reprises the Archives hymn in F major)
+  // ======================================================================
+  (function () {
+    var Dm = arp6('D3', 'A3', 'D4', 'F4'), Bb = arp6('Bb2', 'F3', 'Bb3', 'D4'), F = arp6('F3', 'C4', 'F4', 'A4'), C = arp6('C3', 'G3', 'C4', 'E4'),
+        Gm = arp6('G2', 'D3', 'G3', 'Bb3'), A = arp6('A2', 'E3', 'A3', 'C#4'), Eb = arp6('Eb3', 'Bb3', 'Eb4', 'G4'), Db = arp6('Db3', 'Ab3', 'Db4', 'F4'),
+        BbF = arp6('F3', 'Bb3', 'D4', 'F4'), C7s = arp6('C3', 'G3', 'Bb3', 'F4');
+    function two(x) { return x + ' ' + x; }
+    T.ending = {
+      name: 'Lantern at Dawn', bpm: 72, meter: 4, step: 1 / 3, vol: 1, hum: [0.008, 0.07],
+      parts: {
+        pno: { i: 'piano', v: 0.75, p: -0.1, vel: 0.62 },
+        vln: { i: 'violins', v: 0.95, p: 0.1, vel: 0.8 },
+        cb:  { i: 'contrabass', v: 0.6, vel: 0.7 },
+        org: { i: 'organ_soft', v: 0.35, p: 0.2, vel: 0.6 },
+        cho: { i: 'choir', v: 0.6, p: -0.2, vel: 0.65 },
+        hp:  { i: 'harp', v: 0.55, p: 0.3, vel: 0.6 },
+        bel: { i: 'celesta', v: 0.4, p: 0.4, vel: 0.6 }
+      },
+      sections: {
+        A: { bars: 8,
+          vln: '@1/3 A4*3 D5*2 E5 F5*6 | F5*3 G5*2 F5 D5*6 | C5*3 F5*2 G5 A5*6 | G5*5 F5 E5*6 | D5*3 G5*2 A5 Bb5*6 | A5*3 F5*2 E5 D5*6 | D5*3 Bb4*2 C5 D5*3 F5*3 | E5*9 C#5*3 |',
+          pno: bars('@1/3', [two(Dm), two(Bb), two(F), two(C), two(Gm), two(Dm), two(Bb), two(A)]),
+          cb: '@4 D2 | Bb1 | F2 | C2 | G1 | D2 | Bb1 | A1 |',
+          org: '@4 D4+F4 | D4+F4 | C4+F4 | C4+E4 | D4+G4 | D4+F4 | D4+F4 | C#4+E4 |' },
+        B: { bars: 8,
+          vln: '@1/3 C5*3 F5*2 G5 A5*6 | Bb4*3 Eb5*2 F5 G5*6 | Ab4*3 Db5*2 Eb5 F5*2 Ab5 Db6*3 | C6*6 Bb5*2 G5 E5*3 | C5*3 F5*2 G5 A5*3 C6*2 Bb5 | A5*3 F5*2 G5 A5*3 D6*2 C6 | F5*3 D5*2 Bb4 C5*3 E5*2 G5 | F5*12 |',
+          hp: bars('@1/3', [two(F), two(Eb), two(Db), two(C), two(F), two(Dm), Bb + ' ' + C, two(F)]),
+          cho: '@4 F4+A4 | Eb4+G4 | Db4+F4 | C4+E4 | F4+A4 | D4+F4 | @2 D4+F4 E4+G4 | @4 F4+A4 |',
+          cb: '@4 F2 | Eb2 | Db2 | C2 | F2 | D2 | @2 Bb1 C2 | @4 F2 |',
+          bel: '@1 . . A5 . | . . G5 . | . . F5 Db6 | C6 . . . | . . A5 . | . . A5 . | .*4 | F5 . . . |' },
+        C: { bars: 4,
+          vln: '@1/3 A5*6 G5*3 F5*3 | F5*6 D5*6 | C5*12 | .*12 |',
+          pno: bars('@1/3', [two(F), two(BbF), two(F), two(C7s)]),
+          cho: '@4 A4+C5 | Bb4+D5 | A4+C5 | G4+Bb4 |',
+          cb: '@4 F2 | F2 | F2 | C2 |' }
+      },
+      order: ['A', 'B', 'C']
+    };
+  })();
+
+  // ------------------------------------------------------------ compiler
+  var cache = {};
+  function compileTrack(id) {
+    if (Object.prototype.hasOwnProperty.call(cache, id)) return cache[id];
+    var tr = T[id];
+    if (!tr) return null;
+    var errs = [], meter = tr.meter || 4, dstep = tr.step || 0.5;
+
+    function addLoop(P, beats, where, push) {
+      if (!(P.len > 0)) { if (P.ev.length) errs.push(where + ': empty pattern'); return; }
+      var r = beats / P.len;
+      if (P.len > beats + 1e-6) errs.push(where + ': pattern (' + (+P.len.toFixed(3)) + ' beats) longer than section (' + beats + ')');
+      else if (Math.abs(r - Math.round(r)) > 1e-6) errs.push(where + ': pattern length ' + (+P.len.toFixed(3)) + ' does not divide section length ' + beats);
+      for (var off = 0; off < beats - 1e-9; off += P.len) {
+        for (var i = 0; i < P.ev.length; i++) {
+          var t = off + P.ev[i].t;
+          if (t < beats - 1e-9) push(P.ev[i], t);
+        }
+      }
+    }
+
+    function seq(names) {
+      var out = [], pos = 0;
+      for (var si = 0; si < names.length; si++) {
+        var sname = names[si], sec = tr.sections[sname];
+        if (!sec) { errs.push(id + ': missing section ' + sname); continue; }
+        var bm = sec.meter || meter, beats = (sec.bars || 1) * bm;
+        for (var pk in sec) {
+          if (pk === 'bars' || pk === 'meter' || pk === 'tr') continue;
+          var part = tr.parts[pk], src = sec[pk], where = id + '/' + sname + '/' + pk;
+          if (!part) { errs.push(where + ': unknown part'); continue; }
+          if (part.kit) {
+            var stp = src.step || 0.25;
+            for (var ln in src) {
+              if (ln === 'step') continue;
+              if (!kit[ln]) { errs.push(where + ': unknown drum lane ' + ln); continue; }
+              addLoop(parseLane(src[ln], stp), beats, where + '.' + ln, function (e, t) {
+                out.push({ t: pos + t, p: pk, k: ln, v: e.v });
+              });
+            }
+          } else {
+            if (!instruments[part.i]) errs.push(where + ': unknown instrument ' + part.i);
+            var P = parsePattern(Array.isArray(src) ? src.join(' ') : src, part.step || dstep, bm, errs, where);
+            var trn = (part.tr || 0) + (sec.tr || 0);
+            addLoop(P, beats, where, function (e, t) {
+              out.push({ t: pos + t, d: Math.min(e.d, beats - t), p: pk, v: e.v, g: e.g,
+                n: trn ? e.n.map(function (n) { return n + trn; }) : e.n });
+            });
+          }
+        }
+        pos += beats;
+      }
+      out.sort(function (a, b) { return a.t - b.t; });
+      return { ev: out, len: pos };
+    }
+
+    var c = {
+      id: id, name: tr.name || id, bpm: tr.bpm, spb: 60 / tr.bpm, meter: meter,
+      parts: tr.parts, loop: tr.loop !== false, vol: tr.vol || 1, hum: tr.hum || [0.006, 0.06],
+      intro: tr.intro ? seq(tr.intro) : null, main: seq(tr.order || Object.keys(tr.sections)), errs: errs
+    };
+    cache[id] = c;
+    return c;
+  }
+
+  function validate() {
+    var out = [];
+    for (var id in T) {
+      var c = compileTrack(id);
+      for (var i = 0; i < c.errs.length; i++) out.push(c.errs[i]);
+      if (!c.main.ev.length) out.push(id + ': no events');
+    }
+    return out;
+  }
+
+  function info(id) {
+    var c = compileTrack(id);
+    if (!c) return null;
+    var introBeats = c.intro ? c.intro.len : 0;
+    return { id: id, name: c.name, bpm: c.bpm, loop: c.loop, introSeconds: introBeats * c.spb, loopSeconds: c.main.len * c.spb,
+      bars: c.main.len / c.meter, events: c.main.ev.length + (c.intro ? c.intro.ev.length : 0) };
+  }
+
+  G.musicData = {
+    version: 1,
+    tracks: T,
+    order: Object.keys(T),
+    instruments: instruments,
+    kit: kit,
+    waves: waves,
+    compile: compileTrack,
+    validate: validate,
+    info: info,
+    noteNum: noteNum,
+    parsePattern: parsePattern
+  };
+})();

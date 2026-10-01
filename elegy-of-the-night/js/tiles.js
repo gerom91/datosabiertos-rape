@@ -39,12 +39,12 @@
     caverns: {
       solid: 'rock', top: 'wet', wall: 'cave', far: 'cave',
       c: { base: '#2f5263', dark: '#162a35', light: '#5a8a9a', mortar: '#0c1820', accent: '#4a8a8a', accent2: '#9ad6d6', wall: '#10202a', wall2: '#0a161e', trim: '#4a7a8a' },
-      darkness: 0.45, tint: '#020812', decor: ['stalactite', 'crystal', 'waterfall', 'stalactite'],
+      darkness: 0.45, tint: '#020812', candle: 'lantern', decor: ['stalactite', 'crystal', 'waterfall', 'stalactite'],
     },
     clocktower: {
       solid: 'blocks', top: 'brass', wall: 'bricks', far: 'night',
       c: { base: '#5a5248', dark: '#302a24', light: '#8a8070', mortar: '#1e1a16', accent: '#b08d3c', accent2: '#e8c870', wall: '#2a241e', wall2: '#1e1a16', trim: '#b08d3c' },
-      darkness: 0.15, tint: '#06040a', decor: ['gear', 'clockface', 'window', 'pendulum', 'gear'],
+      darkness: 0.15, tint: '#06040a', candle: 'lantern', decor: ['gear', 'clockface', 'window', 'pendulum', 'gear'],
     },
     catacombs: {
       solid: 'bone', top: 'none', wall: 'skulls', far: 'none',

@@ -204,15 +204,15 @@
     if (!kb)
       return [
         [G.tr({ en: 'Move', es: 'Mover' }), 'D-pad / L-stick'], [G.tr({ en: 'Jump', es: 'Saltar' }), 'A'], [G.tr({ en: 'Right hand', es: 'Mano der.' }), 'X'],
-        [G.tr({ en: 'Left hand', es: 'Mano izq.' }), 'B'], ['Backdash', 'Y'], [G.tr({ en: 'Sub-weapon', es: 'Subarma' }), '↑+X / RT'],
-        [G.tr({ en: 'Bat / Mist', es: 'Murciél. / Niebla' }), 'LB / RB'], [G.tr({ en: 'Wolf', es: 'Lobo' }), 'LT'], ['Menu', 'Start'], [G.tr({ en: 'Map', es: 'Mapa' }), 'Back'],
+        [G.tr({ en: 'Left hand', es: 'Mano izq.' }), 'B'], [G.tr({ en: 'Backdash', es: 'Paso atrás' }), 'Y'], [G.tr({ en: 'Sub-weapon', es: 'Subarma' }), '↑+X / RT'],
+        [G.tr({ en: 'Bat / Mist', es: 'Murciél. / Niebla' }), 'LB / RB'], [G.tr({ en: 'Wolf', es: 'Lobo' }), 'LT'], [G.tr({ en: 'Menu', es: 'Menú' }), 'Start'], [G.tr({ en: 'Map', es: 'Mapa' }), 'Back'],
         [G.tr({ en: 'Interact', es: 'Interactuar' }), '↑'], [G.tr({ en: 'Drop down', es: 'Bajar' }), '↓ + A'],
       ];
     return [
       [G.tr({ en: 'Move', es: 'Mover' }), '← →'], [G.tr({ en: 'Crouch', es: 'Agacharse' }), '↓'], [G.tr({ en: 'Jump', es: 'Saltar' }), 'Z / Space'],
-      [G.tr({ en: 'Right hand', es: 'Mano der.' }), 'X'], [G.tr({ en: 'Left hand', es: 'Mano izq.' }), 'C'], ['Backdash', 'A / Shift'],
+      [G.tr({ en: 'Right hand', es: 'Mano der.' }), 'X'], [G.tr({ en: 'Left hand', es: 'Mano izq.' }), 'C'], [G.tr({ en: 'Backdash', es: 'Paso atrás' }), 'A / Shift'],
       [G.tr({ en: 'Sub-weapon', es: 'Subarma' }), '↑+X / S'], [G.tr({ en: 'Bat · Mist · Wolf', es: 'Murc. · Niebla · Lobo' }), 'Q · W · E'],
-      ['Menu', 'Enter / Esc'], [G.tr({ en: 'Map', es: 'Mapa' }), 'Tab / M'], [G.tr({ en: 'Interact', es: 'Interactuar' }), '↑'], [G.tr({ en: 'Drop down', es: 'Bajar' }), '↓ + Z'],
+      [G.tr({ en: 'Menu', es: 'Menú' }), 'Enter / Esc'], [G.tr({ en: 'Map', es: 'Mapa' }), 'Tab / M'], [G.tr({ en: 'Interact', es: 'Interactuar' }), '↑'], [G.tr({ en: 'Drop down', es: 'Bajar' }), '↓ + Z'],
     ];
   };
 
@@ -228,6 +228,29 @@
       ctx.drawImage(img, Math.round(b.x - 16), Math.round(b.y + Math.sin(b.p) * 4 - 12));
       ctx.globalAlpha = 1;
     }
+    // a cliff in the foreground with Alucard watching the castle, cape in the wind
+    ctx.fillStyle = '#05040a';
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    ctx.lineTo(0, 178);
+    ctx.lineTo(24, 172);
+    ctx.lineTo(58, 176);
+    ctx.lineTo(92, 186);
+    ctx.lineTo(118, 196);
+    ctx.lineTo(132, 212);
+    ctx.lineTo(140, H);
+    ctx.closePath();
+    ctx.fill();
+    const t = TL.t;
+    const cape = [], hair = [];
+    for (let i = 0; i < 7; i++) {
+      const k = i / 6;
+      cape.push({ x: -4 - i * 3.2 - Math.sin(t * 0.07 + i * 0.7) * 2.2 * k, y: -33 + i * 4.2 + Math.sin(t * 0.05 + i) * 1.5 * k });
+    }
+    for (let i = 0; i < 4; i++) hair.push({ x: -3 - i * 3 - Math.sin(t * 0.09 + i) * 1.2, y: -40 + i * 2.6 });
+    const pose = G.alucardPose('idle', t);
+    const res = G.drawAlucard(pose, cape, hair, { extraPal: ['#16121c', '#9a1426'] });
+    gfx.drawAnchored(res.canvas, 66, 177, 64, 76, false);
     // vignette
     const vg = ctx.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 260);
     vg.addColorStop(0, 'rgba(0,0,0,0)');
@@ -250,7 +273,12 @@
     m.fillRect(W / 2 - 110, ty + 28, 220, 0.6);
     m.globalAlpha = 1;
     if (TL.mode === 'press') {
-      if (TL.t % 60 < 42) gfx.text(G.input.lastDevice === 'touch' || G.isTouch ? G.t('tap_start') : G.t('press_start'), W / 2, 150, { size: 9, font: 'title', align: 'center', color: '#f0e6d0' });
+      let focused = true;
+      try {
+        focused = document.hasFocus();
+      } catch (e) {}
+      const msg = G.input.lastDevice === 'touch' || G.isTouch ? G.t('tap_start') : focused ? G.t('press_start') : G.t('click_start');
+      if (TL.t % 60 < 42) gfx.text(msg, W / 2, 150, { size: 9, font: 'title', align: 'center', color: '#f0e6d0' });
     } else if (TL.mode === 'menu' || TL.mode === 'fade') {
       const items = menuItems();
       items.forEach((it, i) => {

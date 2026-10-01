@@ -126,7 +126,26 @@ module.exports.script = async function ({ shot, key, wait, ev, page }) {
         G.game.add(e);
         return 'ok ' + eid;
       }, [eid, tx, ty]));
-    } else if (cmd === 'god') await ev(() => (window.G.DEBUG_GOD = true));
+    } else if (cmd === 'perf')
+      console.log('perf>', await ev((n) => {
+        const G = window.G;
+        const t0 = performance.now();
+        for (let i = 0; i < n; i++) {
+          G.input.update();
+          G.game.update();
+        }
+        const t1 = performance.now();
+        for (let i = 0; i < n; i++) {
+          G.gfx.beginFrame();
+          G.game.draw();
+          G.gfx.present();
+          G.gfx.ui();
+          G.ui.drawHUD();
+        }
+        const t2 = performance.now();
+        return 'update ' + ((t1 - t0) / n).toFixed(3) + ' ms, draw ' + ((t2 - t1) / n).toFixed(3) + ' ms, ents ' + G.game.ents.length;
+      }, Number(arg) || 300));
+    else if (cmd === 'god') await ev(() => (window.G.DEBUG_GOD = true));
     else if (cmd === 'clear') await ev(() => window.G.game.ents.forEach((e) => { if (e instanceof window.G.Enemy) e.dead = true; }));
     else if (cmd === 'level') await ev((n) => { const G = window.G; G.gainExp(G.state, 999999 * 0); while (G.state.level < n) G.gainExp(G.state, G.expFor(G.state.level)); G.game.player.refreshStats(); G.state.hp = G.game.player.st.hpMax; }, Number(arg));
   }

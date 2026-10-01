@@ -886,6 +886,11 @@
       e.t = UI.t;
       e.stT = UI.t;
       e._flashDraw = false;
+      e.preview = true;
+      e.alpha = 1;
+      e.rise = 1;
+      if (d.previewState) e.state = d.previewState;
+      else if (['buried', 'rising', 'hang', 'hidden', 'dormant', 'sleep', 'perch', 'disguised', 'asleep'].includes(e.state)) e.state = 'walk';
       const sc = Math.min(1, 60 / Math.max(e.h, 1), 90 / Math.max(e.w, 1));
       pc.save();
       pc.translate(48, 66);

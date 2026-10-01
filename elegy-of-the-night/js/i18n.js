@@ -23,6 +23,7 @@
     // title / system
     press_start: { en: 'Press any key', es: 'Pulsa cualquier tecla' },
     tap_start: { en: 'Tap to begin', es: 'Toca para empezar' },
+    click_start: { en: 'Click to begin', es: 'Haz clic para empezar' },
     new_game: { en: 'New Game', es: 'Nueva partida' },
     continue: { en: 'Continue', es: 'Continuar' },
     options: { en: 'Options', es: 'Opciones' },

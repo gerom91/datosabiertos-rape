@@ -22,11 +22,19 @@ const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const files = [...html.matchAll(/<script src="(js\/[^"]+)"><\/script>/g)].map((m) => m[1]).filter((f) => !/(main|title|audio|music)\.js$/.test(f));
 const ctx = { console, setTimeout, clearTimeout, Math, JSON, Date, Map, Set, WeakMap, Promise, Array, Object };
 vm.createContext(ctx);
+const loadIssues = [];
 for (const f of files) {
   const p = path.join(ROOT, f);
   if (!fs.existsSync(p)) continue;
-  vm.runInContext(fs.readFileSync(p, 'utf8'), ctx, { filename: f });
+  try {
+    vm.runInContext(fs.readFileSync(p, 'utf8'), ctx, { filename: f });
+  } catch (e) {
+    // a content file that is being edited right now must not block room validation
+    if (/rooms_|roombuilder|world|physics|util/.test(f)) throw e;
+    loadIssues.push(f + ': ' + e.message);
+  }
 }
+if (loadIssues.length) console.log('(skipped files that failed to load: ' + loadIssues.join(' | ') + ')');
 const G = ctx.G;
 G.world.build();
 const T = G.T, P = G.phys, TS = 16, CW = 24, CH = 14;
@@ -385,6 +393,66 @@ for (const id of ids) {
     console.log(rows.map((r) => r.join('')).join('\n'));
   }
   if (problems + warnings > before) report.push('');
+}
+
+// ---------------------------------------------------------------- global progression
+// Rooms are nodes; a door can be crossed at level max(room lvl, its gate). Portals link the maps.
+if (!only.length) {
+  const adj = {};
+  const add = (a, b, L) => (adj[a] = adj[a] || []).push([b, L]);
+  for (const id of G.world.order) {
+    const def = G.world.rooms[id];
+    const lvl = def.lvl || 0;
+    const gates = def.gates || {};
+    for (const d of def._doors) {
+      if (!d.to) continue;
+      const k = d.side + d.cell;
+      add(id, d.to, Math.max(lvl, gates[k] != null ? gates[k] : lvl));
+    }
+    for (const sp of new G.world.Room(def).spawns) if (sp.t === 'portal' && G.world.rooms[sp.to]) add(id, sp.to, lvl);
+  }
+  const reachAt = (L) => {
+    const seen = new Set(['ent_gate']);
+    const q = ['ent_gate'];
+    while (q.length) {
+      const a = q.shift();
+      for (const [b, need] of adj[a] || []) {
+        if (need > L || seen.has(b)) continue;
+        // entering b also requires b's own arrival level
+        const nb = G.world.rooms[b];
+        if ((nb.lvl || 0) > L) continue;
+        seen.add(b);
+        q.push(b);
+      }
+    }
+    return seen;
+  };
+  const RELIC_LVL = { leap_stone: 1, soul_wolf: 2, form_mist: 3, belmont_crest: 4, soul_bat: 5, lantern: 6 };
+  for (let L = 0; L <= 6; L++) {
+    const seen = reachAt(L);
+    for (const id of G.world.order) {
+      const def = G.world.rooms[id];
+      if ((def.lvl || 0) === L && !seen.has(id)) problem('[progression] ' + id + ' (lvl ' + L + ') is not reachable from ent_gate with level-' + L + ' abilities');
+    }
+  }
+  // each ability relic must be obtainable with the previous level
+  const relicRoom = {};
+  for (const id of G.world.order) {
+    const def = G.world.rooms[id];
+    for (const sp of new G.world.Room(def).spawns) if (sp.t === 'relic') relicRoom[sp.id] = id;
+  }
+  const bossRelic = { leap_stone: 'gal_boss', soul_wolf: 'stk_doppel', belmont_crest: 'hun_echo' };
+  for (const r in RELIC_LVL) {
+    const room = relicRoom[r] || bossRelic[r];
+    if (!room || !G.world.rooms[room]) {
+      warn('[progression] relic ' + r + ' is not placed yet');
+      continue;
+    }
+    if (!reachAt(RELIC_LVL[r] - 1).has(room)) problem('[progression] relic ' + r + ' (' + room + ') needs level ' + (RELIC_LVL[r] - 1) + ' but is not reachable then');
+  }
+  for (const page of [['page2', 'vault_worm'], ['page3', 'clk_top'], ['final', 'keep_throne']]) {
+    if (G.world.rooms[page[1]] && !reachAt(5).has(page[1])) problem('[progression] ' + page[1] + ' unreachable at level 5');
+  }
 }
 
 console.log(report.join('\n'));

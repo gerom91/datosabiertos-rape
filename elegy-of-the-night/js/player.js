@@ -137,9 +137,9 @@
     const shX = (pose ? pose.hipX : 0) + Math.sin(ln) * 12.5 - 3;
     const ax = fx + shX * f, ay = fy + shY;
     // keep the cape behind: a gentle push backwards + motion wind
-    const windX = -f * 0.18 - this.vx * 0.22;
-    const windY = this.vy > 0 ? -this.vy * 0.16 : -this.vy * 0.05;
-    simChain(this.cape, ax, ay, crouch ? 3.6 : 5, 0.26, windX, windY, fy - 1, 0.88);
+    const windX = -f * 0.07 - this.vx * 0.075;
+    const windY = this.vy > 0 ? -Math.min(this.vy, 6) * 0.055 : -this.vy * 0.02;
+    simChain(this.cape, ax, ay, crouch ? 3.6 : 5, 0.3, windX, windY, fy - 1, 0.86);
     // never in front of the body
     for (let i = 1; i < this.cape.length; i++) {
       const p = this.cape[i];
@@ -148,7 +148,7 @@
     }
     const hx = fx + ((pose ? pose.hipX + Math.sin(ln) * 18.5 : 0) - 3) * f;
     const hy = fy + (pose ? pose.hipY - Math.cos(ln) * 18.5 : -39.5) - 1;
-    simChain(this.hair, hx, hy, 3.4, 0.16, -f * 0.12 - this.vx * 0.12, this.vy > 0 ? -this.vy * 0.1 : 0, fy - 4, 0.8);
+    simChain(this.hair, hx, hy, 3.4, 0.2, -f * 0.06 - this.vx * 0.05, this.vy > 0 ? -Math.min(this.vy, 6) * 0.03 : 0, fy - 4, 0.78);
   };
 
   // ---- form changes --------------------------------------------------------------------
@@ -470,8 +470,8 @@
         this.crouch = false;
         this.setHeight(HUM_H);
       } else if (G.hasRelic(s, 'gravity_boots') && (this.onGround || this.coyote > 0 || this.airJumps < 2) && I.matchMotion(['d', 'u'], this.facing, 24) && I.held.up) {
-        this.superT = 40;
-        this.vy = -10.5;
+        this.superT = 24;
+        this.vy = -10;
         this.onGround = false;
         this.coyote = 0;
         this.jumpBuf = 0;
@@ -513,8 +513,7 @@
     // ---- gravity ----
     if (this.superT > 0) {
       this.superT--;
-      this.vy = Math.min(this.vy, -9.5 + (40 - this.superT) * 0.05);
-      if (!I.held.jump && this.superT < 32) this.superT = 0;
+      this.vy = Math.min(this.vy, -9.5 + (24 - this.superT) * 0.05);
       if (this.t % 2 === 0) G.fx.particle(this.cx + U.rnd(-3, 3), this.fy, 0, 1, '#ffd080', 14);
     } else {
       let gmul = 1;

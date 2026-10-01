@@ -107,6 +107,7 @@ G.defEnemy('marionette', {
   bony / armored : true,             // hit sound
   noBlood, blood:'#hex', stunTime,
   init(e, g){}, ai(e, g){}, draw(e, ctx, sx, sy){}, onHit(e, hit, g){}, onDeath(e, g){},
+  previewState:'walk',               // state used to draw the bestiary preview (if the initial state is invisible)
 });
 ```
 Instance helpers: `e.move()` (gravity + tiles), `e.drift()` (no collision), `e.face()`, `e.dxp()`, `e.dyp()`,
