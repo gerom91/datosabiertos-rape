@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Elegy of the Night</title>
+<!--BUILD:HEAD-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Crimson+Pro:ital,wght@0,500;0,700;1,500&display=swap">
+<style>
+  /* One visual world: a dark gothic stage. Layout: full-viewport canvas, letterboxed. */
+  :root {
+    color-scheme: dark;
+    --bg: #050407;
+    --ink: #0b0910;
+    --gold: #c9a24a;
+    --bone: #ece6d6;
+    --blood: #8a1426;
+    --mist: rgba(236, 230, 214, 0.16);
+    --font-title: "Cinzel", Georgia, "Times New Roman", serif;
+    --font-body: "Crimson Pro", Georgia, "Times New Roman", serif;
+  }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--bone); overflow: hidden; }
+  body { font-family: var(--font-body); -webkit-user-select: none; user-select: none; touch-action: none; }
+  #wrap { position: fixed; inset: 0; background: var(--bg); }
+  #game { display: block; width: 100%; height: 100%; outline: none; image-rendering: pixelated; }
+  #loading { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-title); letter-spacing: 0.2em; color: var(--gold); font-size: 14px; pointer-events: none; }
+  #touch { position: absolute; inset: 0; pointer-events: none; }
+  #touch[hidden] { display: none !important; }
+  #touch .pad, #touch .btn, #touch .mini { pointer-events: auto; touch-action: none; }
+  #touch .pad {
+    position: absolute; left: max(14px, env(safe-area-inset-left, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px));
+    width: min(34vmin, 170px); height: min(34vmin, 170px); border-radius: 50%;
+    background: radial-gradient(circle, rgba(236,230,214,0.10) 0 30%, rgba(236,230,214,0.05) 31% 100%);
+    border: 1px solid var(--mist);
+  }
+  #touch .pad::before, #touch .pad::after { content: ""; position: absolute; background: var(--mist); }
+  #touch .pad::before { left: 50%; top: 14%; bottom: 14%; width: 2px; transform: translateX(-50%); }
+  #touch .pad::after { top: 50%; left: 14%; right: 14%; height: 2px; transform: translateY(-50%); }
+  #touch .btns { position: absolute; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px)); width: min(40vmin, 200px); height: min(36vmin, 180px); }
+  #touch .btn {
+    position: absolute; width: 33%; aspect-ratio: 1; max-width: 100%; border-radius: 50%;
+    display: grid; place-items: center; font-family: var(--font-title); font-size: clamp(10px, 2.6vmin, 14px); color: var(--bone);
+    background: rgba(20, 14, 30, 0.45); border: 1px solid rgba(201, 162, 74, 0.55);
+  }
+  #touch .btn:active { background: rgba(138, 20, 38, 0.6); }
+  #touch .b-jump { right: 0; bottom: 0; }
+  #touch .b-atk { right: 36%; bottom: 8%; }
+  #touch .b-l { right: 0; bottom: 38%; }
+  #touch .b-dash { right: 68%; bottom: 0; }
+  #touch .b-sub { right: 36%; bottom: 46%; }
+  #touch .minis { position: absolute; top: 50%; transform: translateY(-50%); right: max(10px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 6px; }
+  body.portrait #touch .minis { top: calc(var(--screen-bottom, 50vh) + 12px); transform: none; left: 50%; right: auto; translate: -50% 0; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  body.portrait #touch .pad, body.portrait #touch .btns { bottom: max(28px, env(safe-area-inset-bottom, 0px)); }
+  #touch .mini {
+    font-family: var(--font-title); font-size: 11px; padding: 6px 9px; border-radius: 6px; color: var(--bone);
+    background: rgba(20, 14, 30, 0.5); border: 1px solid rgba(201, 162, 74, 0.45);
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" tabindex="0" aria-label="Elegy of the Night game screen"></canvas>
+  <div id="loading">ELEGY OF THE NIGHT</div>
+  <div id="touch" hidden>
+    <div class="pad" data-dpad="1" aria-label="Directional pad"></div>
+    <div class="btns">
+      <div class="btn b-jump" data-act="jump confirm" aria-label="Jump / confirm">⤒</div>
+      <div class="btn b-atk" data-act="attack cancel" aria-label="Attack / cancel">⚔︎</div>
+      <div class="btn b-l" data-act="attack2" aria-label="Left hand / shield">◈</div>
+      <div class="btn b-dash" data-act="backdash" aria-label="Backdash">⤺</div>
+      <div class="btn b-sub" data-act="sub" aria-label="Sub-weapon">✝</div>
+    </div>
+    <div class="minis">
+      <div class="mini" data-act="bat" aria-label="Bat form">Bat</div>
+      <div class="mini" data-act="mist" aria-label="Mist form">Mist</div>
+      <div class="mini" data-act="wolf" aria-label="Wolf form">Wolf</div>
+      <div class="mini" data-act="map tabL">Map</div>
+      <div class="mini" data-act="menu tabR">Menu</div>
+    </div>
+  </div>
+</div>
+<!--BUILD:SCRIPTS-->
+<script src="js/util.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/gfx.js"></script>
+<script src="js/input.js"></script>
+<script src="js/world.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/tiles.js"></script>
+<script src="js/data_items.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/player_art.js"></script>
+<script src="js/player.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/enemy_base.js"></script>
+<script src="js/weapons.js"></script>
+<script src="js/game.js"></script>
+<script src="js/data_enemies.js"></script>
+<script src="js/data_enemies_archives.js"></script>
+<script src="js/data_bosses.js"></script>
+<script src="js/roombuilder.js"></script>
+<script src="js/data_areas.js"></script>
+<script src="js/rooms_castle.js"></script>
+<script src="js/rooms_castle_a.js"></script>
+<script src="js/rooms_castle_b.js"></script>
+<script src="js/rooms_archives.js"></script>
+<script src="js/story.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/save.js"></script>
+<script src="js/audio_stub.js"></script>
+<script src="js/music.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/title.js"></script>
+<script src="js/main.js"></script>
+<!--/BUILD:SCRIPTS-->
+</body>
+</html>
