@@ -23,14 +23,15 @@
   }
   html, body { height: 100%; margin: 0; background: var(--bg); color: var(--bone); overflow: hidden; }
   body { font-family: var(--font-body); -webkit-user-select: none; user-select: none; touch-action: none; }
-  #wrap { position: fixed; inset: 0; background: var(--bg); }
+  /* the game area stays clear of notches and home indicators; the body colour fills the insets */
+  #wrap { position: fixed; top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); background: var(--bg); }
   #game { display: block; width: 100%; height: 100%; outline: none; image-rendering: pixelated; }
   #loading { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-title); letter-spacing: 0.2em; color: var(--gold); font-size: 14px; pointer-events: none; }
   #touch { position: absolute; inset: 0; pointer-events: none; }
   #touch[hidden] { display: none !important; }
   #touch .pad, #touch .btn, #touch .mini { pointer-events: auto; touch-action: none; }
   #touch .pad {
-    position: absolute; left: max(14px, env(safe-area-inset-left, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px));
+    position: absolute; left: 14px; bottom: 14px;
     width: min(34vmin, 170px); height: min(34vmin, 170px); border-radius: 50%;
     background: radial-gradient(circle, rgba(236,230,214,0.10) 0 30%, rgba(236,230,214,0.05) 31% 100%);
     border: 1px solid var(--mist);
@@ -38,7 +39,7 @@
   #touch .pad::before, #touch .pad::after { content: ""; position: absolute; background: var(--mist); }
   #touch .pad::before { left: 50%; top: 14%; bottom: 14%; width: 2px; transform: translateX(-50%); }
   #touch .pad::after { top: 50%; left: 14%; right: 14%; height: 2px; transform: translateY(-50%); }
-  #touch .btns { position: absolute; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px)); width: min(40vmin, 200px); height: min(36vmin, 180px); }
+  #touch .btns { position: absolute; right: 14px; bottom: 14px; width: min(40vmin, 200px); height: min(36vmin, 180px); }
   #touch .btn {
     position: absolute; width: 33%; aspect-ratio: 1; max-width: 100%; border-radius: 50%;
     display: grid; place-items: center; font-family: var(--font-title); font-size: clamp(10px, 2.6vmin, 14px); color: var(--bone);
@@ -50,9 +51,9 @@
   #touch .b-l { right: 0; bottom: 38%; }
   #touch .b-dash { right: 68%; bottom: 0; }
   #touch .b-sub { right: 36%; bottom: 46%; }
-  #touch .minis { position: absolute; top: 50%; transform: translateY(-50%); right: max(10px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 6px; }
+  #touch .minis { position: absolute; top: 50%; transform: translateY(-50%); right: 10px; display: flex; flex-direction: column; gap: 6px; }
   body.portrait #touch .minis { top: calc(var(--screen-bottom, 50vh) + 12px); transform: none; left: 50%; right: auto; translate: -50% 0; flex-direction: row; flex-wrap: wrap; justify-content: center; }
-  body.portrait #touch .pad, body.portrait #touch .btns { bottom: max(28px, env(safe-area-inset-bottom, 0px)); }
+  body.portrait #touch .pad, body.portrait #touch .btns { bottom: 28px; }
   #touch .mini {
     font-family: var(--font-title); font-size: 11px; padding: 6px 9px; border-radius: 6px; color: var(--bone);
     background: rgba(20, 14, 30, 0.5); border: 1px solid rgba(201, 162, 74, 0.45);

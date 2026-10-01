@@ -317,3 +317,27 @@ module.exports.bosses = async function ({ shot, key, wait, ev, page }) {
     await shot(boss + '_after');
   }
 };
+
+// mapfull: mark every room visited and screenshot both map pages
+module.exports.mapfull = async function ({ shot, key, wait, ev }) {
+  const r = await ev(() => {
+    const G = window.G;
+    const s = G.newState();
+    s.room = 'gal_hall';
+    G.continueGame(s);
+    G.ui.closeAll();
+    for (const id of G.world.order) {
+      const d = G.world.rooms[id];
+      const v = (G.state.visited[d.map] = G.state.visited[d.map] || {});
+      for (let x = 0; x < d.w; x++) for (let y = 0; y < d.h; y++) v[d.x + x + ',' + (d.y + y)] = 1;
+    }
+    G.ui.openPause('map');
+    return [G.mapCompletion(G.state, 'castle'), G.mapCompletion(G.state, 'archives')];
+  });
+  console.log('completion', JSON.stringify(r));
+  await wait(400);
+  await shot('castle');
+  await key('KeyZ');
+  await wait(400);
+  await shot('archives');
+};
