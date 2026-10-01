@@ -115,35 +115,35 @@
   // lp:{f,kt:keytrack,env:Hz,ed:env decay,q,vel}  hp:Hz  vib:{r,d cents,dl delay}  pe:{c cents,t}
   // fm:{r ratio,i index,d decay}  ch: noise chiff {f,q,g,d}  fx: part-bus effects  gate: default gate
   var instruments = {
-    organ:       { osc: [{ w: 'organ' }, { w: 'flute8', o: -1, g: 0.35 }], a: 0.035, s: 1, r: 0.25, lp: { f: 5200, kt: 0.15 }, ch: { f: 2800, q: 1.2, g: 0.08, d: 0.06 }, vib: { r: 6.2, d: 3 }, gain: 0.12, send: 0.35 },
-    organ_full:  { osc: [{ w: 'organ' }, { w: 'organ', o: -1, g: 0.5 }, { w: 'flute8', o: 1, g: 0.3 }], a: 0.025, s: 1, r: 0.3, lp: { f: 6000, kt: 0.1 }, ch: { f: 3000, q: 1, g: 0.1, d: 0.05 }, gain: 0.09, send: 0.3 },
+    organ:       { osc: [{ w: 'organ' }, { w: 'flute8', o: -1, g: 0.35 }], a: 0.035, s: 1, r: 0.25, lp: { f: 5200, kt: 0.15 }, ch: { f: 2800, q: 1.2, g: 0.08, d: 0.06 }, vib: { r: 6.2, d: 3 }, gain: 0.09, send: 0.35 },
+    organ_full:  { osc: [{ w: 'organ' }, { w: 'organ', o: -1, g: 0.32 }, { w: 'flute8', o: 1, g: 0.3 }], a: 0.025, s: 1, r: 0.3, lp: { f: 6000, kt: 0.1 }, ch: { f: 3000, q: 1, g: 0.1, d: 0.05 }, gain: 0.09, send: 0.3 },
     organ_soft:  { osc: [{ w: 'flute8' }, { w: 'sine', o: 1, g: 0.16 }], a: 0.07, s: 1, r: 0.32, vib: { r: 5.6, d: 7 }, gain: 0.16, send: 0.45 },
-    organ_pedal: { osc: [{ w: 'flute8' }, { w: 'sine', o: -1, g: 0.45 }], a: 0.06, s: 1, r: 0.3, lp: { f: 800 }, gain: 0.22, send: 0.2 },
-    organ_lead:  { osc: [{ w: 'organ' }, { w: 'sine', o: 1, g: 0.25 }], a: 0.006, d: 0.5, s: 0.75, r: 0.09, ch: { f: 3200, q: 1, g: 0.14, d: 0.02 }, vib: { r: 6.8, d: 7 }, lp: { f: 4500, kt: 0.2 }, gain: 0.12, send: 0.25 },
-    harpsichord: { osc: [{ w: 'sawtooth', g: 0.7 }, { w: 'square', o: 1, g: 0.2, d: 5 }], a: 0.002, d: 1.3, s: 0, r: 0.1, lp: { f: 2200, kt: 0.6, env: 4000, ed: 0.12, q: 1.2 }, hp: 200, gain: 0.19, gate: 1, send: 0.25 },
+    organ_pedal: { osc: [{ w: 'flute8' }, { w: 'sine', o: 1, g: 0.3 }, { w: 'sine', o: -1, g: 0.12 }], a: 0.06, s: 1, r: 0.3, lp: { f: 1100 }, gain: 0.075, send: 0.2 },
+    organ_lead:  { osc: [{ w: 'organ' }, { w: 'sine', o: 1, g: 0.25 }], a: 0.006, d: 0.5, s: 0.75, r: 0.09, ch: { f: 3200, q: 1, g: 0.14, d: 0.02 }, vib: { r: 6.8, d: 7 }, lp: { f: 4500, kt: 0.2 }, gain: 0.2, send: 0.25 },
+    harpsichord: { osc: [{ w: 'sawtooth', g: 0.7 }, { w: 'square', o: 1, g: 0.2, d: 5 }], a: 0.002, d: 1.3, s: 0, r: 0.1, lp: { f: 2200, kt: 0.6, env: 4000, ed: 0.12, q: 1.2 }, hp: 200, gain: 0.36, gate: 1, send: 0.25 },
     piano:       { osc: [{ w: 'triangle' }, { w: 'sine', o: 1, g: 0.26 }, { w: 'sawtooth', g: 0.06 }], a: 0.004, d: 2.6, s: 0, r: 0.35, lp: { f: 1200, kt: 0.6, env: 2400, ed: 0.35, vel: 1 }, gain: 0.3, gate: 1, send: 0.3 },
     harp:        { osc: [{ w: 'triangle' }, { w: 'sine', o: 1, g: 0.3 }], a: 0.002, d: 1.8, s: 0, r: 0.6, lp: { f: 2200, kt: 0.5, env: 2000, ed: 0.08 }, gain: 0.28, gate: 1, send: 0.4 },
     celesta:     { osc: [{ w: 'sine' }], fm: { r: 4, i: 1.1, d: 0.3 }, a: 0.002, d: 1.5, s: 0, r: 0.4, gain: 0.18, gate: 1, send: 0.45 },
     bell:        { osc: [{ w: 'sine' }, { w: 'sine', r: 2, g: 0.22 }], fm: { r: 3.5, i: 2.2, d: 1.2 }, a: 0.002, d: 3.5, s: 0, r: 1.2, gain: 0.12, gate: 1, send: 0.55 },
     bell_deep:   { osc: [{ w: 'sine' }, { w: 'sine', r: 0.5, g: 0.4 }, { w: 'sine', r: 1.19, g: 0.18 }, { w: 'sine', r: 2, g: 0.16 }], fm: { r: 1.41, i: 2, d: 2 }, a: 0.003, d: 6, s: 0, r: 2, gain: 0.12, gate: 1, send: 0.6 },
     glass:       { osc: [{ w: 'sine' }, { w: 'sine', r: 3, g: 0.1 }], fm: { r: 5, i: 0.35, d: 0.15 }, a: 0.004, d: 3.2, s: 0, r: 1.2, gain: 0.15, gate: 1, send: 0.65 },
-    strings:     { osc: [{ w: 'sawtooth', d: -9 }, { w: 'sawtooth', d: 9 }], a: 0.22, d: 0.4, s: 0.85, r: 0.5, lp: { f: 1700, kt: 0.45, q: 0.5 }, vib: { r: 5.2, d: 9, dl: 0.3 }, gain: 0.07, send: 0.4 },
-    violins:     { osc: [{ w: 'sawtooth', d: -6 }, { w: 'sawtooth', d: 7 }], a: 0.09, d: 0.3, s: 0.9, r: 0.35, lp: { f: 2500, kt: 0.35, q: 0.6, vel: 0.6 }, vib: { r: 5.6, d: 16, dl: 0.22 }, gain: 0.085, send: 0.38 },
-    strings_stac:{ osc: [{ w: 'sawtooth', d: -7 }, { w: 'sawtooth', d: 7 }], a: 0.006, d: 0.2, s: 0.2, r: 0.07, lp: { f: 1800, kt: 0.4, env: 2200, ed: 0.07 }, gain: 0.1, gate: 0.6, send: 0.25 },
-    cello:       { osc: [{ w: 'sawtooth', d: -5 }, { w: 'sawtooth', d: 5 }], a: 0.12, d: 0.3, s: 0.9, r: 0.35, lp: { f: 950, kt: 0.5 }, vib: { r: 5, d: 10, dl: 0.3 }, gain: 0.12, send: 0.3 },
-    contrabass:  { osc: [{ w: 'sawtooth' }, { w: 'sine', g: 0.7 }], a: 0.07, d: 0.3, s: 0.9, r: 0.3, lp: { f: 380, kt: 0.4 }, gain: 0.2, send: 0.15 },
-    pizz:        { osc: [{ w: 'triangle' }, { w: 'sawtooth', g: 0.35 }], a: 0.003, d: 0.5, s: 0, r: 0.08, lp: { f: 700, kt: 0.6, env: 1800, ed: 0.05 }, gain: 0.3, gate: 1, send: 0.3 },
+    strings:     { osc: [{ w: 'sawtooth', d: -9 }, { w: 'sawtooth', d: 9 }], a: 0.22, d: 0.4, s: 0.85, r: 0.5, lp: { f: 1700, kt: 0.45, q: 0.5 }, vib: { r: 5.2, d: 9, dl: 0.3 }, gain: 0.06, send: 0.4 },
+    violins:     { osc: [{ w: 'sawtooth', d: -6 }, { w: 'sawtooth', d: 7 }], a: 0.09, d: 0.3, s: 0.9, r: 0.35, lp: { f: 2500, kt: 0.35, q: 0.6, vel: 0.6 }, vib: { r: 5.6, d: 16, dl: 0.22 }, gain: 0.19, send: 0.38 },
+    strings_stac:{ osc: [{ w: 'sawtooth', d: -7 }, { w: 'sawtooth', d: 7 }], a: 0.006, d: 0.2, s: 0.2, r: 0.07, lp: { f: 1800, kt: 0.4, env: 2200, ed: 0.07 }, gain: 0.16, gate: 0.6, send: 0.25 },
+    cello:       { osc: [{ w: 'sawtooth', d: -5 }, { w: 'sawtooth', d: 5 }], a: 0.12, d: 0.3, s: 0.9, r: 0.35, lp: { f: 950, kt: 0.5 }, vib: { r: 5, d: 10, dl: 0.3 }, gain: 0.14, send: 0.3 },
+    contrabass:  { osc: [{ w: 'sawtooth' }, { w: 'sine', g: 0.4 }], a: 0.07, d: 0.3, s: 0.9, r: 0.3, lp: { f: 520, kt: 0.4 }, gain: 0.12, send: 0.15 },
+    pizz:        { osc: [{ w: 'triangle' }, { w: 'sawtooth', g: 0.45 }], a: 0.003, d: 0.5, s: 0, r: 0.08, lp: { f: 800, kt: 0.6, env: 2200, ed: 0.05 }, gain: 0.3, gate: 1, send: 0.3 },
     choir:       { osc: [{ w: 'sawtooth', d: -12 }, { w: 'sawtooth', d: 10 }], a: 0.45, d: 0.3, s: 0.9, r: 0.8, vib: { r: 4.7, d: 13, dl: 0.35 }, gain: 0.15, send: 0.55,
                    fx: { formants: [[760, 4, 1], [1150, 6, 0.6], [2650, 9, 0.2]], body: [420, 0.35], gain: 2.2 } },
     choir_low:   { osc: [{ w: 'sawtooth', d: -10 }, { w: 'sawtooth', d: 9 }], a: 0.5, d: 0.3, s: 0.9, r: 0.9, vib: { r: 4.4, d: 11, dl: 0.4 }, gain: 0.16, send: 0.55,
                    fx: { formants: [[480, 4, 1], [850, 6, 0.55], [2500, 9, 0.12]], body: [350, 0.45], gain: 2.2 } },
-    flute:       { osc: [{ w: 'sine' }, { w: 'sine', o: 1, g: 0.12 }, { w: 'triangle', g: 0.15 }], a: 0.05, d: 0.2, s: 0.85, r: 0.12, ch: { f: 2500, q: 0.7, g: 0.05, d: 0.09 }, vib: { r: 5.2, d: 14, dl: 0.18 }, gain: 0.2, send: 0.35 },
-    brass:       { osc: [{ w: 'sawtooth', d: -6 }, { w: 'sawtooth', d: 6 }], a: 0.035, d: 0.25, s: 0.7, r: 0.14, lp: { f: 500, kt: 0.5, env: 2600, ed: 0.2, q: 1.2, vel: 1 }, pe: { c: -40, t: 0.06 }, vib: { r: 5.5, d: 6, dl: 0.3 }, gain: 0.1, send: 0.3 },
-    bass:        { osc: [{ w: 'sawtooth', g: 0.55 }, { w: 'sine', g: 0.9 }], a: 0.004, d: 0.4, s: 0.55, r: 0.06, lp: { f: 420, kt: 0.4, env: 1300, ed: 0.07, q: 2 }, gain: 0.24, gate: 0.88, send: 0.04 },
-    guitar:      { osc: [{ w: 'sawtooth', d: -9 }, { w: 'sawtooth', d: 9 }], a: 0.003, d: 0.5, s: 0.55, r: 0.06, lp: { f: 3500 }, gain: 0.08, gate: 0.9, send: 0.12, fx: { drive: 5, lp: 2800, hp: 100, gain: 0.5 } },
-    timpani:     { osc: [{ w: 'sine' }, { w: 'sine', r: 1.5, g: 0.25 }, { w: 'sine', r: 2, g: 0.12 }], pe: { c: 60, t: 0.08 }, ch: { f: 180, q: 0.7, g: 0.6, d: 0.12 }, a: 0.003, d: 2, s: 0, r: 0.6, gain: 0.4, gate: 1, send: 0.35 },
-    pad:         { osc: [{ w: 'sawtooth', d: -14 }, { w: 'sawtooth', d: 13 }, { w: 'triangle', o: -1, g: 0.5 }], a: 1.4, d: 1, s: 0.85, r: 1.8, lp: { f: 650, kt: 0.3 }, gain: 0.06, send: 0.5 },
-    drone:       { osc: [{ w: 'sawtooth' }, { w: 'sine', o: -1, g: 0.8 }], a: 2.2, s: 1, r: 2.5, lp: { f: 260, kt: 0.2 }, gain: 0.12, send: 0.4 },
+    flute:       { osc: [{ w: 'sine' }, { w: 'sine', o: 1, g: 0.12 }, { w: 'triangle', g: 0.15 }], a: 0.05, d: 0.2, s: 0.85, r: 0.12, ch: { f: 2500, q: 0.7, g: 0.05, d: 0.09 }, vib: { r: 5.2, d: 14, dl: 0.18 }, gain: 0.3, send: 0.35 },
+    brass:       { osc: [{ w: 'sawtooth', d: -6 }, { w: 'sawtooth', d: 6 }], a: 0.035, d: 0.25, s: 0.7, r: 0.14, lp: { f: 700, kt: 0.5, env: 3200, ed: 0.25, q: 1.2, vel: 1 }, pe: { c: -40, t: 0.06 }, vib: { r: 5.5, d: 6, dl: 0.3 }, gain: 0.2, send: 0.3 },
+    bass:        { osc: [{ w: 'sawtooth', g: 0.75 }, { w: 'sine', g: 0.35 }], a: 0.004, d: 0.4, s: 0.55, r: 0.06, lp: { f: 560, kt: 0.4, env: 1600, ed: 0.07, q: 2.2 }, gain: 0.14, gate: 0.88, send: 0.04 },
+    guitar:      { osc: [{ w: 'sawtooth', d: -9 }, { w: 'sawtooth', d: 9 }], a: 0.003, d: 0.5, s: 0.55, r: 0.06, lp: { f: 3500 }, gain: 0.1, gate: 0.9, send: 0.12, fx: { drive: 5, lp: 3400, hp: 140, gain: 0.5 } },
+    timpani:     { osc: [{ w: 'sine' }, { w: 'sine', r: 1.5, g: 0.25 }, { w: 'sine', r: 2, g: 0.12 }], pe: { c: 60, t: 0.08 }, ch: { f: 180, q: 0.7, g: 0.6, d: 0.12 }, a: 0.003, d: 2, s: 0, r: 0.6, gain: 0.25, gate: 1, send: 0.35 },
+    pad:         { osc: [{ w: 'sawtooth', d: -14 }, { w: 'sawtooth', d: 13 }, { w: 'triangle', o: -1, g: 0.25 }], a: 1.4, d: 1, s: 0.85, r: 1.8, lp: { f: 650, kt: 0.3 }, gain: 0.06, send: 0.5 },
+    drone:       { osc: [{ w: 'sawtooth' }, { w: 'sine', o: -1, g: 0.3 }], a: 2.2, s: 1, r: 2.5, lp: { f: 330, kt: 0.2 }, gain: 0.12, send: 0.4 },
     lead:        { osc: [{ w: 'square', g: 0.55 }, { w: 'sawtooth', d: 8, g: 0.45 }], a: 0.01, d: 0.3, s: 0.8, r: 0.12, lp: { f: 3000, kt: 0.25 }, vib: { r: 5.6, d: 16, dl: 0.18 }, gain: 0.085, send: 0.25 },
     reed:        { osc: [{ w: 'reed' }], a: 0.03, d: 0.2, s: 0.85, r: 0.1, lp: { f: 1800, kt: 0.3 }, vib: { r: 5, d: 9, dl: 0.2 }, gain: 0.12, send: 0.3 }
   };
@@ -151,14 +151,14 @@
   // ------------------------------------------------------------- drum kit
   // L: layers (same format as sfx layers, see audio.js), v: lane gain, p: pan, rp: random pan
   var kit = {
-    k: { L: [{ f: [150, 46], fs: 0.07, d: 0.38, v: 1 }, { n: 1, ft: 'lowpass', f: 3000, d: 0.018, v: 0.45 }], v: 0.75, p: 0 },
-    s: { L: [{ w: 'triangle', f: [240, 170], fs: 0.05, d: 0.11, v: 0.55 }, { n: 1, ft: 'highpass', f: 1300, d: 0.2, v: 0.55 }, { n: 1, ft: 'bandpass', f: 3200, q: 0.9, d: 0.09, v: 0.3 }], v: 0.55, p: 0.05 },
+    k: { L: [{ f: [160, 52], fs: 0.05, d: 0.22, v: 1 }, { n: 1, ft: 'lowpass', f: 4000, d: 0.016, v: 0.6 }], v: 0.4, p: 0 },
+    s: { L: [{ w: 'triangle', f: [240, 170], fs: 0.05, d: 0.11, v: 0.55 }, { n: 1, ft: 'highpass', f: 1300, d: 0.2, v: 0.55 }, { n: 1, ft: 'bandpass', f: 3200, q: 0.9, d: 0.09, v: 0.3 }], v: 0.42, p: 0.05 },
     h: { L: [{ n: 1, ft: 'highpass', f: 7500, d: 0.045, v: 0.35 }], v: 0.4, p: 0.28 },
     o: { L: [{ n: 1, ft: 'highpass', f: 6800, d: 0.32, v: 0.3 }], v: 0.4, p: 0.28 },
     c: { L: [{ n: 1, ft: 'highpass', f: 4200, d: 2.2, v: 0.4 }, { n: 1, ft: 'bandpass', f: 6500, q: 0.6, d: 1.3, v: 0.25 }], v: 0.4, p: -0.25 },
     r: { L: [{ n: 1, ft: 'highpass', f: 8000, d: 0.45, v: 0.15 }, { f: 5100, d: 0.6, v: 0.04 }, { f: 7230, d: 0.4, v: 0.03 }], v: 0.5, p: -0.3 },
-    t: { L: [{ f: [130, 78], fs: 0.12, d: 0.42, v: 0.85 }, { n: 1, ft: 'lowpass', f: 1400, d: 0.04, v: 0.25 }], v: 0.6, p: -0.2 },
-    m: { L: [{ f: [190, 115], fs: 0.1, d: 0.34, v: 0.8 }, { n: 1, ft: 'lowpass', f: 1800, d: 0.035, v: 0.25 }], v: 0.6, p: 0.15 },
+    t: { L: [{ f: [130, 78], fs: 0.12, d: 0.42, v: 0.85 }, { n: 1, ft: 'lowpass', f: 1400, d: 0.04, v: 0.25 }], v: 0.45, p: -0.2 },
+    m: { L: [{ f: [190, 115], fs: 0.1, d: 0.34, v: 0.8 }, { n: 1, ft: 'lowpass', f: 1800, d: 0.035, v: 0.25 }], v: 0.45, p: 0.15 },
     f: { L: [{ f: [85, 42], fs: 0.18, d: 1.1, v: 0.95 }, { n: 1, ft: 'lowpass', f: 500, d: 0.25, v: 0.35 }], v: 0.6, p: 0 },
     w: { L: [{ f: [1350, 1250], d: 0.055, v: 0.5 }, { n: 1, ft: 'bandpass', f: 1600, q: 9, d: 0.025, v: 0.35 }], v: 0.32, p: 0.3 },
     u: { L: [{ f: [900, 840], d: 0.07, v: 0.5 }, { n: 1, ft: 'bandpass', f: 1100, q: 9, d: 0.03, v: 0.35 }], v: 0.32, p: -0.3 },
@@ -166,7 +166,7 @@
     x: { L: [{ n: 1, ft: 'bandpass', f: 1400, q: 1.2, d: 0.02, v: 0.5, rep: [3, 0.011] }, { n: 1, ft: 'bandpass', f: 1500, q: 1, t: 0.03, d: 0.15, v: 0.4 }], v: 0.45, p: -0.1 },
     i: { L: [{ f: 3520, d: 1.1, v: 0.12 }, { f: 5280, d: 0.8, v: 0.07 }, { f: 8150, d: 0.45, v: 0.04 }], v: 0.4, p: 0.4 },
     j: { L: [{ n: 1, ft: 'highpass', f: 6500, d: 0.09, v: 0.25 }, { n: 1, ft: 'bandpass', f: 9000, q: 2, d: 0.14, v: 0.12 }], v: 0.38, p: 0.3 },
-    y: { L: [{ n: 1, ft: 'bandpass', f: 6000, q: 1.2, a: 0.012, d: 0.07, v: 0.2 }], v: 0.34, p: 0.25 },
+    y: { L: [{ n: 1, ft: 'bandpass', f: 6000, q: 1.2, a: 0.012, d: 0.07, v: 0.5 }], v: 0.34, p: 0.25 },
     p: { L: [{ f: [1700, 2500], fs: 0.035, d: 0.2, v: 0.25, rnd: 500 }], v: 0.5, p: 0, rp: 0.6 },
     g: { L: [{ n: 1, ft: 'bandpass', f: [500, 280], q: 2.5, a: 0.08, d: 4.5, v: 0.4 }, { f: 97, d: 4, v: 0.2, fm: [2.76, 1.5, 3] }, { f: [180, 170], d: 3.5, v: 0.12 }], v: 0.45, p: 0 },
     a: { L: [{ w: 'square', f: 1150, d: 0.07, v: 0.07, lp: 5000 }, { f: 2980, d: 0.25, v: 0.1 }, { f: 4430, d: 0.18, v: 0.06 }, { n: 1, ft: 'highpass', f: 5000, d: 0.02, v: 0.3 }], v: 0.38, p: 0.2 },
@@ -202,15 +202,16 @@
     var PED = '@4 D2 | Bb1 | G1 | A1 | Bb1 | G1 | A1 | D2 |';
     var VC = '@1 F3*2 E3 D3 | D3*2 F3 Bb3 | Bb3*2 A3 G3 | A2*2 C#3 E3 | D3*2 F3 D3 | D3*2 G3 Bb3 | A3*2 G3 E3 | D3*2 A2*2 |';
     T.title = {
-      name: 'Elegy of the Night', bpm: 70, meter: 4, vol: 1,
+      name: 'Elegy of the Night', bpm: 70, meter: 4, vol: 1.2,
       parts: {
         org: { i: 'organ', v: 0.75, s: 0.4 },
-        ped: { i: 'organ_pedal', v: 0.9 },
-        cho: { i: 'choir', v: 0.8, p: 0.1 },
-        bel: { i: 'bell_deep', v: 0.7, p: -0.15 },
+        orgb: { i: 'organ', v: 0.42, s: 0.4, vel: 0.7 },
+        ped: { i: 'organ_pedal', v: 0.7 },
+        cho: { i: 'choir', v: 0.9, p: 0.1 },
+        bel: { i: 'bell_deep', v: 1.1, p: -0.15 },
         str: { i: 'violins', v: 0.9, p: -0.15 },
         vc:  { i: 'cello', v: 0.8, p: 0.25 },
-        tim: { i: 'timpani', v: 0.8 },
+        tim: { i: 'timpani', v: 0.5 },
         dr:  { kit: 1, v: 0.6 }
       },
       sections: {
@@ -220,9 +221,9 @@
           ped: '@2 D2 Bb1 | G1 A1 | D2 C2 | Bb1 A1 |',
           cho: '@2 F4+A4 F4+Bb4 | G4+Bb4 E4+A4 | F4+A4 F4+A4 | F4+Bb4 E4+A4 |',
           bel: '@1 D4*4 | . . A3*2 | D4*4 | . . A3*2 |' },
-        B: { bars: 8, str: MEL, org: ORG, ped: PED, vc: VC, bel: '@4 D4 .*7 |',
+        B: { bars: 8, str: 'v.88 ' + MEL, orgb: ORG, ped: PED, vc: VC, bel: '@4 D4 .*7 |',
           dr: { step: 1, z: pad('', 30) + 'x.' } },
-        C: { bars: 8, str: MEL, cho: 't-12 ' + MEL, org: ORG, ped: PED, vc: VC,
+        C: { bars: 8, str: 'v1.08 ' + MEL, cho: 't-12 ' + MEL, orgb: ORG, ped: PED, vc: VC,
           bel: '@4 D4 | . | . | A3 | . | . | . | D4 |',
           tim: '@1 D2*4 | .*4 | .*4 | . . @0.25 v.5 A1 A1 A1 A1 v.7 A1 A1 A1 A1 | @1 .*4 | .*4 | @0.25 v.5 A1 A1 A1 A1 v.65 A1 A1 A1 A1 v.8 A1 A1 A1 A1 v1 A1 A1 A1 A1 | @1 D2*4 |',
           dr: { step: 1, c: pad('x', 32) } }
@@ -235,12 +236,12 @@
   // 2. PROLOGUE — narration underscore, A minor, 60 BPM (quiet)
   // ======================================================================
   T.prologue = {
-    name: 'Chronicle of Ashes', bpm: 60, meter: 4, vol: 1,
+    name: 'Chronicle of Ashes', bpm: 60, meter: 4, vol: 1.51,
     parts: {
       pno: { i: 'piano', v: 0.8, p: -0.1, vel: 0.62 },
-      lo:  { i: 'cello', v: 0.75, p: 0.15, vel: 0.6 },
-      hi:  { i: 'strings', v: 0.55, p: 0.25, vel: 0.55 },
-      cel: { i: 'celesta', v: 0.4, p: 0.35, vel: 0.5 }
+      lo:  { i: 'cello', v: 0.6, p: 0.15, vel: 0.6 },
+      hi:  { i: 'strings', v: 0.85, p: 0.25, vel: 0.55 },
+      cel: { i: 'celesta', v: 0.8, p: 0.35, vel: 0.5 }
     },
     sections: {
       A: { bars: 8,
@@ -271,16 +272,16 @@
     var TOC = '@0.25 E5 B4 G4 B4 E5 B4 G4 B4 G5 E5 B4 E5 G5 E5 B4 E5 | D5 A4 F#4 A4 D5 A4 F#4 A4 F#5 D5 A4 D5 F#5 D5 A4 D5 | C5 G4 E4 G4 C5 G4 E4 G4 E5 C5 G4 C5 E5 C5 G4 C5 | B4 F#4 D#4 F#4 B4 F#4 D#4 F#4 D#5 B4 F#4 B4 D#5 F#5 A5 F#5 |';
     var BASS_C = '@0.5 ' + [b8('E2', 'E3'), b8('D2', 'D3'), b8('C2', 'C3'), b8('B1', 'B2', 'D#2')].join(' | ') + ' |';
     T.entrance = {
-      name: 'Gate of the Crimson Moon', bpm: 132, meter: 4, vol: 1, hum: [0.004, 0.06],
+      name: 'Gate of the Crimson Moon', bpm: 132, meter: 4, vol: 1.7, hum: [0.004, 0.06],
       parts: {
-        lead: { i: 'organ_lead', v: 0.85, p: 0.05 },
-        vln:  { i: 'violins', v: 0.85, p: -0.1 },
-        hpsi: { i: 'harpsichord', v: 0.7, p: 0.3 },
+        lead: { i: 'organ_lead', v: 1.3, p: 0.05 },
+        vln:  { i: 'violins', v: 1.1, p: -0.1 },
+        hpsi: { i: 'harpsichord', v: 1.0, p: 0.3 },
         pad:  { i: 'strings', v: 0.6, p: -0.3, vel: 0.6 },
         org:  { i: 'organ', v: 0.5, p: 0.2, vel: 0.65 },
-        bass: { i: 'bass', v: 0.9 },
-        gtr:  { i: 'guitar', v: 0.55, p: -0.35, vel: 0.7 },
-        dr:   { kit: 1, v: 0.85 }
+        bass: { i: 'bass', v: 0.72 },
+        gtr:  { i: 'guitar', v: 0.46, p: -0.35, vel: 0.7 },
+        dr:   { kit: 1, v: 0.68 }
       },
       sections: {
         I: { bars: 2, dr: dsec(2, { k: 'X...X...X...X...', h: 'x.x.x.x.x.x.x.x.' }, FILL),
@@ -321,14 +322,14 @@
     var ARP_B = bars('@0.5', CH_B.map(function (c) { return alb(c[0], c[1], c[2]); }));
     var STR_B = bars('@3', CH_B.map(function (c) { return c.join('+'); }));
     T.gallery = {
-      name: 'Waltz of Marble Saints', bpm: 150, meter: 3, vol: 1, hum: [0.005, 0.07],
+      name: 'Waltz of Marble Saints', bpm: 150, meter: 3, vol: 1.8, hum: [0.005, 0.07],
       parts: {
-        hpsi: { i: 'harpsichord', v: 0.8, p: 0.1 },
-        fl:   { i: 'flute', v: 0.65, p: -0.2 },
-        pz:   { i: 'pizz', v: 0.9, p: -0.1 },
-        pzc:  { i: 'pizz', v: 0.45, p: 0.25, vel: 0.6 },
-        str:  { i: 'strings', v: 0.5, p: -0.3, vel: 0.55 },
-        dr:   { kit: 1, v: 0.5 }
+        hpsi: { i: 'harpsichord', v: 1.25, p: 0.1 },
+        fl:   { i: 'flute', v: 0.5, p: -0.2 },
+        pz:   { i: 'pizz', v: 0.8, p: -0.1 },
+        pzc:  { i: 'pizz', v: 0.6, p: 0.25, vel: 0.6 },
+        str:  { i: 'strings', v: 0.75, p: -0.3, vel: 0.55 },
+        dr:   { kit: 1, v: 2.0 }
       },
       sections: {
         A:  { bars: 16, hpsi: MEL_A, pz: BASS_A, pzc: PZC_A, str: STR_A, dr: { step: 1, i: pad('o', 12) } },
@@ -353,14 +354,14 @@
     var MEL_C = "@0.5 C6' . G5' . Eb5' . | C6' . Ab5' . Eb5' . | F5' Ab5' C6' Ab5' F5' Ab5' | G5*2 F5' Eb5' D5' B4' | C5' D5' Eb5' . G5' . | Ab5' G5' F5' . C5' . | B4' C5' D5' F5' Eb5' D5' | C5*2 . . G4' . |";
     var TICK = { step: 1, u: 'x..', w: '.oo' };
     T.library = {
-      name: 'Minuet of the Silent Stacks', bpm: 110, meter: 3, vol: 1, hum: [0.006, 0.08],
+      name: 'Minuet of the Silent Stacks', bpm: 110, meter: 3, vol: 2.34, hum: [0.006, 0.08],
       parts: {
-        hpsi: { i: 'harpsichord', v: 0.8, p: 0.15 },
-        fl:   { i: 'flute', v: 0.7, p: -0.2 },
-        pz:   { i: 'pizz', v: 0.9, p: -0.05 },
-        hp2:  { i: 'harpsichord', v: 0.42, p: -0.3, vel: 0.6 },
-        cel:  { i: 'celesta', v: 0.45, p: 0.35 },
-        dr:   { kit: 1, v: 0.6 }
+        hpsi: { i: 'harpsichord', v: 1.4, p: 0.15 },
+        fl:   { i: 'flute', v: 0.57, p: -0.2 },
+        pz:   { i: 'pizz', v: 1.0, p: -0.05 },
+        hp2:  { i: 'harpsichord', v: 0.65, p: -0.3, vel: 0.6 },
+        cel:  { i: 'celesta', v: 0.7, p: 0.35 },
+        dr:   { kit: 1, v: 1.8 }
       },
       sections: {
         A:  { bars: 8, hpsi: MEL_A, pz: BASS_A, hp2: HP2_A, dr: { step: 1, u: 'x..', w: '.oo', i: pad('o', 24) } },
@@ -395,27 +396,27 @@
     var ARP_B = bars('@1/3', [Db + ' ' + Db, AbC + ' ' + AbC, Bbm + ' ' + Bbm, Eb + ' ' + Eb, Db + ' ' + Db, AbC + ' ' + AbC, Bbm + ' ' + C, C7 + ' ' + C7]);
     var BEL = '@1 . . Ab5 . | . . G5 . | . . F5 Db6 | C6 . . . | . . Ab5 . | . . G5 . | .*4 | F5 . . . |';
     T.archives = {
-      name: 'Hymn of the Belmont Archives', bpm: 96, meter: 4, step: 1 / 3, vol: 1, hum: [0.006, 0.07],
+      name: 'Hymn of the Belmont Archives', bpm: 96, meter: 4, step: 1 / 3, vol: 1.4, hum: [0.006, 0.07],
       parts: {
         mel: { i: 'violins', v: 1.0, p: -0.05, vel: 0.85 },
         org: { i: 'organ', v: 0.6, p: 0.15, vel: 0.7 },
-        ped: { i: 'organ_pedal', v: 0.85 },
-        hp:  { i: 'harp', v: 0.55, p: 0.3, vel: 0.6 },
+        ped: { i: 'organ_pedal', v: 0.7 },
+        hp:  { i: 'harp', v: 0.66, p: 0.3, vel: 0.6 },
         cho: { i: 'choir', v: 0.75, p: -0.2 },
         vc:  { i: 'cello', v: 0.65, p: 0.25 },
-        bel: { i: 'bell', v: 0.6, p: 0.2 },
-        tim: { i: 'timpani', v: 0.7 },
-        dr:  { kit: 1, v: 0.55 }
+        bel: { i: 'bell', v: 1.0, p: 0.2 },
+        tim: { i: 'timpani', v: 0.5 },
+        dr:  { kit: 1, v: 0.31 }
       },
       sections: {
         I:  { bars: 2, org: '@4 F3+Ab3+C4 | G3+C4+E4 |', ped: '@4 F2 | C2 |', bel: '@1 C5*2 Ab4*2 | G4*2 C4*2 |', cho: '@4 . | E4+G4 |',
           hp: '@1/3 .*12 | ' + C + ' ' + C + ' |' },
-        A:  { bars: 8, mel: ARCH.A, org: ORG_A, ped: PED_A, hp: ARP_A, bel: BEL },
+        A:  { bars: 8, mel: 'v.9 ' + ARCH.A, org: ORG_A, ped: PED_A, hp: ARP_A, bel: BEL },
         B:  { bars: 8, mel: ARCH.B, org: ORG_B, ped: PED_B, hp: ARP_B,
           cho: '@4 F4+Ab4 | Eb4+Ab4 | F4+Bb4 | Eb4+G4 | F4+Ab4 | Eb4+Ab4 | @2 F4+Bb4 E4+G4 | @4 E4+G4 |',
           tim: '@4 . | C2 | . | . | . | C2 | . | @1/3 v.4 C2 C2 C2 v.6 C2 C2 C2 v.8 C2 C2 C2 v1 C2 C2 C2 |',
           dr: { step: 1, f: 'o...', z: pad('', 29) + 'x..' } },
-        A2: { bars: 8, mel: ARCH.A2, cho: 't-12 ' + ARCH.A2, org: ORG_A, ped: PED_A, hp: ARP_A, bel: BEL,
+        A2: { bars: 8, mel: 'v1.08 ' + ARCH.A2, cho: 't-12 ' + ARCH.A2, org: ORG_A, ped: PED_A, hp: ARP_A, bel: BEL,
           vc: '@1 F3*2 Ab3 C4 | Bb3*2 G3 Eb3 | F3*2 Ab3 Db4 | C4*2 Bb3 G3 | Ab3*2 C4 F4 | Eb4*2 Bb3 G3 | Ab3 F3 E3 G3 | F3*4 |',
           tim: '@4 F2 | . | . | C2 | F2 | . | . | F2 |', dr: { step: 1, f: 'x...', c: pad('x', 32) } }
       },
@@ -431,14 +432,14 @@
   // 7. ARCHIVES DEEP — "The Forbidden Vault"  F Phrygian/minor, 12/8, 72 BPM
   // ======================================================================
   T.archives_deep = {
-    name: 'The Forbidden Vault', bpm: 72, meter: 4, step: 1 / 3, vol: 1, hum: [0.008, 0.08],
+    name: 'The Forbidden Vault', bpm: 72, meter: 4, step: 1 / 3, vol: 1.06, hum: [0.008, 0.08],
     parts: {
-      vc:  { i: 'cello', v: 0.9, p: 0.15, vel: 0.75 },
-      dn:  { i: 'drone', v: 0.9 },
+      vc:  { i: 'cello', v: 1.15, p: 0.15, vel: 0.75 },
+      dn:  { i: 'drone', v: 0.45 },
       pad: { i: 'pad', v: 0.9, p: -0.1 },
-      cho: { i: 'choir_low', v: 0.65, p: -0.25, vel: 0.65 },
-      bel: { i: 'bell', v: 0.45, p: 0.4, s: 0.7, fx: { echo: [1.5, 0.45, 0.4], lp: 3000 } },
-      org: { i: 'organ_soft', v: 0.35, p: 0.3, vel: 0.5 },
+      cho: { i: 'choir_low', v: 0.55, p: -0.25, vel: 0.65 },
+      bel: { i: 'bell', v: 1.15, p: 0.4, s: 0.7, fx: { echo: [1.5, 0.45, 0.4], lp: 3000 } },
+      org: { i: 'organ_soft', v: 0.5, p: 0.3, vel: 0.5 },
       dr:  { kit: 1, v: 0.5 }
     },
     sections: {
@@ -468,12 +469,12 @@
         Gs4 = 'G#3 D#4 C#5 D#5 G#5 D#5 C#5 D#4', Gs = 'G#3 D#4 B#4 D#5 G#5 D#5 B#4 D#4', Em7 = 'E3 B3 D#4 G#4 B4 G#4 D#4 B3',
         Am9 = 'A3 E4 B4 C#5 G#5 C#5 B4 E4', Gs7 = 'G#3 D#4 B#4 F#5 G#5 F#5 B#4 D#4';
     T.caverns = {
-      name: 'Where the Dark Water Sleeps', bpm: 80, meter: 4, vol: 1, hum: [0.008, 0.1],
+      name: 'Where the Dark Water Sleeps', bpm: 80, meter: 4, vol: 1.24, hum: [0.008, 0.1],
       parts: {
-        gl:  { i: 'glass', v: 0.9, p: -0.25, vel: 0.7, fx: { echo: [0.75, 0.35, 0.3] } },
-        pad: { i: 'strings', v: 0.45, p: 0.2, vel: 0.5 },
-        dn:  { i: 'drone', v: 0.9 },
-        fl:  { i: 'flute', v: 0.5, p: 0.3, vel: 0.6, s: 0.6, fx: { echo: [1, 0.3, 0.25] } },
+        gl:  { i: 'glass', v: 1.2, p: -0.25, vel: 0.7, fx: { echo: [0.75, 0.35, 0.3] } },
+        pad: { i: 'strings', v: 0.78, p: 0.2, vel: 0.5 },
+        dn:  { i: 'drone', v: 0.64 },
+        fl:  { i: 'flute', v: 0.64, p: 0.3, vel: 0.6, s: 0.6, fx: { echo: [1, 0.3, 0.25] } },
         dr:  { kit: 1, v: 0.6 }
       },
       sections: {
@@ -509,13 +510,13 @@
     var MEL = '@0.5 F#5*6 E5 D5 | C#5*4 D5*2 E5*2 | D5*6 B4*2 | G5*4 F#5*2 E5*2 | E5*4 G5*2 B5*2 | A#4*4 C#5*2 E5*2 | F#5*4 D5*2 B4*2 | C#5*8 |';
     var TT = { w: 'x...x...x...x...', u: '..o...o...o...o.' };
     T.clocktower = {
-      name: 'Gears of the Midnight Hour', bpm: 144, meter: 4, vol: 1, hum: [0.002, 0.05],
+      name: 'Gears of the Midnight Hour', bpm: 144, meter: 4, vol: 2.0, hum: [0.002, 0.05],
       parts: {
-        ost:  { i: 'strings_stac', v: 0.85, p: 0.2, vel: 0.7 },
-        bass: { i: 'contrabass', v: 0.85, gate: 0.5 },
+        ost:  { i: 'strings_stac', v: 1.2, p: 0.2, vel: 0.7 },
+        bass: { i: 'contrabass', v: 0.73, gate: 0.5 },
         brs:  { i: 'brass', v: 0.8, p: -0.15 },
         mel:  { i: 'violins', v: 0.85, p: -0.25 },
-        hpsi: { i: 'harpsichord', v: 0.55, p: 0.35 },
+        hpsi: { i: 'harpsichord', v: 1.0, p: 0.35 },
         dr:   { kit: 1, v: 0.75 }
       },
       sections: {
@@ -535,14 +536,14 @@
   // 10. CATACOMBS — "Lament Beneath the Bones"  Bb minor, 66 BPM
   // ======================================================================
   T.catacombs = {
-    name: 'Lament Beneath the Bones', bpm: 66, meter: 4, vol: 1, hum: [0.01, 0.1],
+    name: 'Lament Beneath the Bones', bpm: 66, meter: 4, vol: 1.02, hum: [0.01, 0.1],
     parts: {
-      dn:  { i: 'drone', v: 1.0 },
+      dn:  { i: 'drone', v: 0.58 },
       cho: { i: 'choir_low', v: 0.85, p: -0.15, vel: 0.7 },
-      vc:  { i: 'cello', v: 0.8, p: 0.2, vel: 0.7 },
-      hi:  { i: 'violins', v: 0.3, p: 0.4, vel: 0.5, s: 0.7 },
-      bel: { i: 'bell_deep', v: 0.4, p: -0.35 },
-      dr:  { kit: 1, v: 0.7 }
+      vc:  { i: 'cello', v: 1.0, p: 0.2, vel: 0.7 },
+      hi:  { i: 'violins', v: 0.5, p: 0.4, vel: 0.5, s: 0.7 },
+      bel: { i: 'bell_deep', v: 0.8, p: -0.35 },
+      dr:  { kit: 1, v: 0.45 }
     },
     sections: {
       A: { bars: 8,
@@ -575,14 +576,14 @@
     var PED_A = '@4 A2 | F2 | E2 | A2 | F2 | E2 | D2 | E2 |';
     var CHO_A = '@1 A4+C5*2 G#4+B4 A4+C5 | A4+D5*2 D5+F5*2 | B4+E5*3 G#4+D5 | A4+C5*4 | A4+C5*2 A4+D5 A4+C5 | C5+E5*2 B4+D5 G4+C5 | D5+F5*2 C5+E5 A4+D5 | B4+E5*2 G#4+D5*2 |';
     T.chapel = {
-      name: 'Vespers for the Forsaken', bpm: 76, meter: 4, vol: 1, hum: [0.006, 0.06],
+      name: 'Vespers for the Forsaken', bpm: 76, meter: 4, vol: 1.11, hum: [0.006, 0.06],
       parts: {
-        org: { i: 'organ_soft', v: 0.9, p: -0.1, vel: 0.75 },
-        ped: { i: 'organ_pedal', v: 0.8 },
-        cho: { i: 'choir', v: 0.8, p: 0.15, vel: 0.75 },
-        bel: { i: 'bell', v: 0.35, p: 0.4 },
-        str: { i: 'strings', v: 0.4, p: 0.3, vel: 0.5 },
-        cel: { i: 'celesta', v: 0.25, p: -0.4, vel: 0.5, fx: { echo: [1.5, 0.35, 0.35] } }
+        org: { i: 'organ_soft', v: 0.55, p: -0.1, vel: 0.75 },
+        ped: { i: 'organ_pedal', v: 0.67 },
+        cho: { i: 'choir', v: 1.2, p: 0.15, vel: 0.75 },
+        bel: { i: 'bell', v: 0.9, p: 0.4 },
+        str: { i: 'strings', v: 1.1, p: 0.3, vel: 0.5 },
+        cel: { i: 'celesta', v: 1.0, p: -0.4, vel: 0.5, fx: { echo: [1.5, 0.35, 0.35] } }
       },
       sections: {
         A: { bars: 8, org: ORG_A, ped: PED_A, cho: CHO_A, bel: '@4 A4 .*7 |' },
@@ -611,17 +612,17 @@
     var RUN = "@0.25 .*8 G4 Ab4 B4 C5 D5 Eb5 F5 G5";
     var KB = { k: 'X.x...x.X.x...x.', s: '....X.......X...', h: 'x.x.x.x.x.x.x.x.' };
     T.keep = {
-      name: 'Throne of Thorns', bpm: 140, meter: 4, vol: 1, hum: [0.003, 0.05],
+      name: 'Throne of Thorns', bpm: 140, meter: 4, vol: 1.75, hum: [0.003, 0.05],
       parts: {
-        org:  { i: 'organ_full', v: 0.75, p: 0.1 },
-        lead: { i: 'brass', v: 0.9, p: -0.1 },
-        ld2:  { i: 'organ_lead', v: 0.75, p: 0.05 },
-        run:  { i: 'strings_stac', v: 0.8, p: -0.3 },
-        pad:  { i: 'strings', v: 0.5, p: 0.3, vel: 0.6 },
-        bass: { i: 'bass', v: 0.9 },
-        cho:  { i: 'choir', v: 0.7, p: -0.2 },
-        tim:  { i: 'timpani', v: 0.8 },
-        dr:   { kit: 1, v: 0.85 }
+        org:  { i: 'organ_full', v: 1.2, p: 0.1 },
+        lead: { i: 'brass', v: 1.2, p: -0.1 },
+        ld2:  { i: 'organ_lead', v: 1.1, p: 0.05 },
+        run:  { i: 'strings_stac', v: 1.3, p: -0.3 },
+        pad:  { i: 'strings', v: 0.85, p: 0.3, vel: 0.6 },
+        bass: { i: 'bass', v: 0.65 },
+        cho:  { i: 'choir', v: 0.8, p: -0.2 },
+        tim:  { i: 'timpani', v: 0.6 },
+        dr:   { kit: 1, v: 0.65 }
       },
       sections: {
         I: { bars: 2, org: '@4 C3+G3+C4*2 |',
@@ -669,17 +670,17 @@
     var HTB = { k: 'X.........X.....', s: '........X.......', T: 'X..X..X.........', h: 'x...x...x...x...' };
     function tp(n) { return n + "! . . " + n + " . . " + n + " ."; }
     T.boss = {
-      name: 'Crimson Duel', bpm: 160, meter: 4, vol: 1, hum: [0.002, 0.05],
+      name: 'Crimson Duel', bpm: 160, meter: 4, vol: 1.7, hum: [0.002, 0.05],
       parts: {
-        gtr:  { i: 'guitar', v: 0.65, p: -0.3 },
-        bass: { i: 'bass', v: 0.95 },
-        org:  { i: 'organ_full', v: 0.6, p: 0.15, vel: 0.75 },
-        ost:  { i: 'strings_stac', v: 0.7, p: 0.3, vel: 0.7 },
-        brs:  { i: 'brass', v: 0.95, p: -0.1 },
-        vln:  { i: 'violins', v: 0.85, p: -0.2 },
-        cho:  { i: 'choir', v: 0.7 },
-        tim:  { i: 'timpani', v: 0.85 },
-        dr:   { kit: 1, v: 0.9 }
+        gtr:  { i: 'guitar', v: 0.52, p: -0.3 },
+        bass: { i: 'bass', v: 0.75 },
+        org:  { i: 'organ_full', v: 0.85, p: 0.15, vel: 0.75 },
+        ost:  { i: 'strings_stac', v: 1.05, p: 0.3, vel: 0.7 },
+        brs:  { i: 'brass', v: 1.35, p: -0.1 },
+        vln:  { i: 'violins', v: 1.15, p: -0.2 },
+        cho:  { i: 'choir', v: 0.6 },
+        tim:  { i: 'timpani', v: 0.45 },
+        dr:   { kit: 1, v: 0.64 }
       },
       sections: {
         I: { bars: 2, gtr: '@4 D3+A3+D4*2 |', dr: { step: 0.25, s: 'o.o.o.o.x.x.x.x.XXXXXXXXXXXXXXXX' },
@@ -718,32 +719,33 @@
     var Am = 'A3 C4 E4 A4 C5 A4 E4 C4', Fc = 'F3 A3 C4 F4 A4 F4 C4 A3', Dm = 'D3 F3 A3 D4 F4 D4 A3 F3', Ec = 'E3 G#3 B3 E4 G#4 E4 B3 G#3', Gc = 'G3 B3 D4 G4 B4 G4 D4 B3';
     var ARP_D = bars('@0.25', [Am + ' ' + Am, Fc + ' ' + Fc, Dm + ' ' + Dm, Ec + ' ' + Ec, Am + ' ' + Am, Fc + ' ' + Fc, Gc + ' ' + Gc, Ec + ' ' + Ec]);
     T.boss_final = {
-      name: 'Requiem for the Last Hunter', bpm: 150, meter: 4, vol: 1, hum: [0.002, 0.05],
+      name: 'Requiem for the Last Hunter', bpm: 150, meter: 4, vol: 1.56, hum: [0.002, 0.05],
       parts: {
-        org:  { i: 'organ_full', v: 0.7, p: 0.1 },
-        arp:  { i: 'organ_lead', v: 0.6, p: 0.25, vel: 0.7 },
-        cho:  { i: 'choir', v: 0.85, p: -0.1 },
-        gtr:  { i: 'guitar', v: 0.6, p: -0.3 },
-        bass: { i: 'bass', v: 0.95 },
-        str:  { i: 'strings_stac', v: 0.7, p: 0.3, vel: 0.7 },
-        brs:  { i: 'brass', v: 0.9, p: -0.15 },
-        tim:  { i: 'timpani', v: 0.85 },
-        bel:  { i: 'bell_deep', v: 0.5, p: 0.3 },
-        dr:   { kit: 1, v: 0.9 }
+        org:  { i: 'organ_full', v: 1.2, p: 0.1 },
+        orgc: { i: 'organ_full', v: 0.55, p: 0.1, vel: 0.7 },
+        arp:  { i: 'organ_lead', v: 0.9, p: 0.25, vel: 0.7 },
+        cho:  { i: 'choir', v: 1.1, p: -0.1 },
+        gtr:  { i: 'guitar', v: 0.48, p: -0.3 },
+        bass: { i: 'bass', v: 0.75 },
+        str:  { i: 'strings_stac', v: 1.08, p: 0.3, vel: 0.7 },
+        brs:  { i: 'brass', v: 1.2, p: -0.15 },
+        tim:  { i: 'timpani', v: 0.64 },
+        bel:  { i: 'bell_deep', v: 0.85, p: 0.3 },
+        dr:   { kit: 1, v: 0.68 }
       },
       sections: {
         I: { bars: 4, org: '@4 E3+B3+E4 | F3+A3+C4 | E3+B3+E4 | F3+A3+C4 |', cho: '@4 E4+B4 | F4+C5 | E4+B4 | F4+A4+C5 |', bel: '@4 E4 | F4 | E4 | F4 |',
           tim: '@0.25 v.4 ' + rep('E2', 16) + ' | v.5 ' + rep('E2', 16) + ' | v.6 ' + rep('E2', 16) + ' | v.75 ' + rep('E2', 8) + ' v1 ' + rep('E2', 8) + ' |',
           dr: { step: 0.25, z: hits(64, [48]), s: pad('', 48) + 'oooxxxxXXXXXXXXX' } },
         A: { bars: 8, gtr: GA, bass: BA, org: ORG_A, dr: dsec(8, ROCK, FILL, 0.25, true) },
-        B: { bars: 8, cho: CHO_B, org: ORG_B, bass: BASS_B, bel: '@4 A3 | F3 | G3 | E3 | A3 | F3 | D3 | E3 |',
+        B: { bars: 8, cho: CHO_B, orgc: ORG_B, bass: BASS_B, bel: '@4 A3 | F3 | G3 | E3 | A3 | F3 | D3 | E3 |',
           dr: dsec(8, { k: 'X.......X.x.....', s: '....X.......X...', r: 'x.x.x.x.x.x.x.x.' }, FILL, 0.25, true) },
         C: { bars: 8, str: STR_C, brs: BRS_C, gtr: GC, bass: BC, dr: dsec(8, ROCK, FILL, 0.25, true) },
         D: { bars: 8, arp: ARP_D, cho: '@4 A4+C5+E5 | A4+C5+F5 | A4+D5+F5 | G#4+B4+E5 | A4+C5+E5 | A4+C5+F5 | G4+B4+D5 | G#4+B4+E5 |',
           bass: '@4 A1 | F2 | D2 | E2 | A1 | F2 | G2 | E2 |',
           tim: '@4 A2 | F2 | D2 | E2 | A2 | F2 | G2 | @0.25 v.5 ' + rep('E2', 8) + ' v.9 ' + rep('E2', 8) + ' |',
           dr: { step: 1, b: pad('x', 32), z: hits(32, [28]) } },
-        E: { bars: 8, cho: CHO_B, brs: 't-12 ' + SOP_B, org: ORG_B, gtr: GB, bass: BASS_B, bel: '@4 A4 | . | . | . | A4 | . | . | E4 |',
+        E: { bars: 8, cho: CHO_B, brs: 't-12 ' + SOP_B, orgc: ORG_B, gtr: GB, bass: BASS_B, bel: '@4 A4 | . | . | . | A4 | . | . | E4 |',
           dr: dsec(8, ROCK, FILL, 0.25, true) }
       },
       intro: ['I'], order: ['A', 'B', 'C', 'D', 'E']
@@ -754,12 +756,12 @@
   // 15. SAVE — "Sanctuary Light"  Bb major, 60 BPM (calm choir loop)
   // ======================================================================
   T.save = {
-    name: 'Sanctuary Light', bpm: 60, meter: 4, vol: 1, hum: [0.006, 0.05],
+    name: 'Sanctuary Light', bpm: 60, meter: 4, vol: 0.95, hum: [0.006, 0.05],
     parts: {
       cho: { i: 'choir', v: 0.8, vel: 0.7 },
-      org: { i: 'organ_soft', v: 0.6, p: -0.15, vel: 0.65 },
-      gl:  { i: 'glass', v: 0.5, p: 0.3, vel: 0.6 },
-      str: { i: 'strings', v: 0.4, p: 0.25, vel: 0.5 }
+      org: { i: 'organ_soft', v: 0.5, p: -0.15, vel: 0.65 },
+      gl:  { i: 'glass', v: 1.6, p: 0.3, vel: 0.6 },
+      str: { i: 'strings', v: 1.1, p: 0.25, vel: 0.5 }
     },
     sections: {
       A: { bars: 8,
@@ -783,13 +785,13 @@
     var PZ_B = '@1 Bb1 . F2 . | C2 . G2 . | A1 . E2 . | D2 . A2 . | G1 . D2 . | C2 . G2 . | F2 . C3 . | C2 . Bb1 . |';
     var DR = { step: 0.5, y: 'xoxoxoxo', i: pad('o', 32) };
     T.shop = {
-      name: "The Librarian's Curios", bpm: 100, meter: 4, vol: 1, hum: [0.007, 0.08],
+      name: "The Librarian's Curios", bpm: 100, meter: 4, vol: 2.29, hum: [0.007, 0.08],
       parts: {
-        hpsi: { i: 'harpsichord', v: 0.8, p: 0.15 },
-        acc:  { i: 'harpsichord', v: 0.42, p: -0.3, vel: 0.6 },
-        pz:   { i: 'pizz', v: 0.9, p: -0.05 },
-        fl:   { i: 'flute', v: 0.6, p: 0.3 },
-        dr:   { kit: 1, v: 0.55 }
+        hpsi: { i: 'harpsichord', v: 1.5, p: 0.15 },
+        acc:  { i: 'harpsichord', v: 0.72, p: -0.3, vel: 0.6 },
+        pz:   { i: 'pizz', v: 0.95, p: -0.05 },
+        fl:   { i: 'flute', v: 0.5, p: 0.3 },
+        dr:   { kit: 1, v: 1.4 }
       },
       sections: {
         A:  { bars: 8, hpsi: MEL_A, acc: ACC_A, pz: PZ_A, dr: DR },
@@ -804,11 +806,11 @@
   // 17. GAME OVER — "Dust Returns to Dust"  D minor, 60 BPM, ~8 s, NOT looping
   // ======================================================================
   T.gameover = {
-    name: 'Dust Returns to Dust', bpm: 60, meter: 4, vol: 1, loop: false, hum: [0.004, 0.04],
+    name: 'Dust Returns to Dust', bpm: 60, meter: 4, vol: 1.24, loop: false, hum: [0.004, 0.04],
     parts: {
       org: { i: 'organ', v: 0.8, vel: 0.75 },
       vc:  { i: 'cello', v: 0.8, p: 0.2, vel: 0.75 },
-      cb:  { i: 'contrabass', v: 0.8, vel: 0.8 }
+      cb:  { i: 'contrabass', v: 0.55, vel: 0.8 }
     },
     sections: {
       A: { bars: 2,
@@ -829,15 +831,15 @@
         BbF = arp6('F3', 'Bb3', 'D4', 'F4'), C7s = arp6('C3', 'G3', 'Bb3', 'F4');
     function two(x) { return x + ' ' + x; }
     T.ending = {
-      name: 'Lantern at Dawn', bpm: 72, meter: 4, step: 1 / 3, vol: 1, hum: [0.008, 0.07],
+      name: 'Lantern at Dawn', bpm: 72, meter: 4, step: 1 / 3, vol: 1.06, hum: [0.008, 0.07],
       parts: {
-        pno: { i: 'piano', v: 0.75, p: -0.1, vel: 0.62 },
+        pno: { i: 'piano', v: 0.58, p: -0.1, vel: 0.62 },
         vln: { i: 'violins', v: 0.95, p: 0.1, vel: 0.8 },
         cb:  { i: 'contrabass', v: 0.6, vel: 0.7 },
         org: { i: 'organ_soft', v: 0.35, p: 0.2, vel: 0.6 },
-        cho: { i: 'choir', v: 0.6, p: -0.2, vel: 0.65 },
-        hp:  { i: 'harp', v: 0.55, p: 0.3, vel: 0.6 },
-        bel: { i: 'celesta', v: 0.4, p: 0.4, vel: 0.6 }
+        cho: { i: 'choir', v: 0.78, p: -0.2, vel: 0.65 },
+        hp:  { i: 'harp', v: 0.7, p: 0.3, vel: 0.6 },
+        bel: { i: 'celesta', v: 0.9, p: 0.4, vel: 0.6 }
       },
       sections: {
         A: { bars: 8,

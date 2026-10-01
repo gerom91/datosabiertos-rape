@@ -173,7 +173,8 @@
         return b.spawn(x, y, { t: 'shop' });
       },
       portal(x, y, to, tx, ty, extra) {
-        return b.spawn(x, y, Object.assign({ t: 'portal', to, tx, ty }, extra || {}));
+        // the Room constructor overwrites every spawn's tx/ty with its own tile: keep the arrival in `dest`
+        return b.spawn(x, y, Object.assign({ t: 'portal', to, tx, ty, dest: [tx, ty] }, extra || {}));
       },
       trigger(x, y, scene, tw2, th2, extra) {
         return b.spawn(x, y, Object.assign({ t: 'trigger', scene, tw: tw2 || 1, th: th2 || 3 }, extra || {}));

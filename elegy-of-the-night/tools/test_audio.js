@@ -165,10 +165,10 @@ async function phaseBrowser() {
       out.unlock = A.unlock(); out.unlock2 = A.unlock();
       await wait(300);
       out.state = A._debug().state;
-      A.playMusic('entrance');
+      A.playMusic('title');
       await wait(1200);
       out.cur = A.currentMusic(); out.voices = A._debug().voices;
-      out.same = A.playMusic('entrance'); out.fadingAfterSame = A._debug().fading;
+      out.same = A.playMusic('title'); out.fadingAfterSame = A._debug().fading;
       let acc = 0; for (let i = 0; i < 10; i++) if (A.sfx('hit_flesh', { pitch: 0.9 + i * 0.02 })) acc++;
       out.rateAccepted = acc;
       const names = A.listSfx(); let acc2 = 0;
@@ -197,7 +197,7 @@ async function phaseBrowser() {
       return out;
     });
     check(live.unlock === true && live.state === 'running', 'unlock() -> AudioContext running (' + live.state + ')');
-    check(live.cur === 'entrance' && live.voices > 0, 'playMusic plays (' + live.voices + ' active voices)');
+    check(live.cur === 'title' && live.voices > 0, 'playMusic plays (' + live.voices + ' active voices)');
     check(live.same === true && live.fadingAfterSame === 0, 'same id again is a no-op');
     check(live.rateAccepted === 1, 'identical sfx rate-limited (' + live.rateAccepted + '/10 accepted)');
     check(live.capAccepted <= 24 && live.sfxVoices <= 24, 'sfx voice cap respected (' + live.capAccepted + ' accepted, ' + live.sfxVoices + ' active)');

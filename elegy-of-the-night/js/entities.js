@@ -520,7 +520,8 @@
         return;
       }
       G.audio.sfx('portal');
-      g.goRoom(this.sp.to, this.sp.tx, this.sp.ty, { fade: 40, flash: '#e8c070' });
+      const dest = this.sp.dest || [this.sp.tx, this.sp.ty]; // arrival tile (see roombuilder portal())
+      g.goRoom(this.sp.to, dest[0], dest[1], { fade: 40, flash: '#e8c070' });
     }
     draw(ctx, camx, camy) {
       const x = Math.round(this.cx - camx), y = Math.round(this.fy - camy);

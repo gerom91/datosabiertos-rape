@@ -1,8 +1,19 @@
 /*
  * Elegy of the Night — The Belmont Archives
  * audio.js — Web Audio engine: synthesized music, sound effects and English TTS voices (G.audio).
- * No audio files: everything is generated at runtime. Reads G.musicData lazily (load order free).
- * Every public function is a safe no-op when Web Audio / speechSynthesis are unavailable.
+ * No audio files: everything is generated at runtime. Reads G.musicData (music.js) lazily, so load order is free.
+ * Every public function is a safe no-op when Web Audio / speechSynthesis are unavailable (never throws).
+ *
+ *   G.audio.unlock()                 call from a user gesture (creates/resumes the AudioContext; idempotent)
+ *   G.audio.isUnlocked()
+ *   G.audio.setVolume(kind, v)       kind 'master'|'music'|'sfx'|'voice', v 0..1 (smooth ramp)
+ *   G.audio.getVolume(kind)
+ *   G.audio.playMusic(id, {fade:1, restart:false})   crossfades; same id = no-op; before unlock it is remembered
+ *   G.audio.stopMusic(fade=1)        G.audio.currentMusic()        G.audio.duck(on)  (music to ~35%)
+ *   G.audio.sfx(name, {vol:1, pitch:1, pan:0})   rate-limited (35 ms per name, 24 voices max)
+ *   G.audio.say(text, {speaker, onstart, onend}) -> {cancel()}   onend fires exactly once (never after cancel)
+ *   G.audio.stopSpeech()   G.audio.speechAvailable()   G.audio.setVoiceEnabled(bool)
+ *   G.audio.listMusic()    G.audio.listSfx()           G.audio._renderOffline(kind, id, seconds) -> Promise<{peak, rms}>
  */
 (function () {
   'use strict';
@@ -10,8 +21,8 @@
   var G = root.G = root.G || {};
   if (G.audio && G.audio.__elegy) return;
 
-  var LOOKAHEAD = 0.12, LOOKAHEAD_HIDDEN = 1.0, TICK_MS = 25, CATCHUP = 0.3;
-  var MAX_SFX = 24, SFX_GAP = 0.035, MAX_MUSIC_VOICES = 110, DUCK = 0.35;
+  var LOOKAHEAD = 0.12, LOOKAHEAD_HIDDEN = 1.5, TICK_MS = 25, CATCHUP = 0.3;
+  var MAX_SFX = 24, SFX_GAP = 0.035, MAX_MUSIC_VOICES = 110, DUCK = 0.35, SFX_GAIN = 1.3, MAX_FADING = 4;
 
   // ------------------------------------------------------------------ utils
   function nowMs() { try { return (root.performance && root.performance.now) ? root.performance.now() : Date.now(); } catch (e) { return Date.now(); } }
@@ -32,7 +43,7 @@
   function hashStr(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
   function ACclass() { try { return root.AudioContext || root.webkitAudioContext || null; } catch (e) { return null; } }
   function OACclass() { try { return root.OfflineAudioContext || root.webkitOfflineAudioContext || null; } catch (e) { return null; } }
-  function md() { return G.musicData || null; }
+  function md() { var gg = root.G; return (gg && gg.musicData) || G.musicData || null; }
   function disc(list) { for (var i = 0; i < list.length; i++) { try { list[i].disconnect(); } catch (e) { /* ignore */ } } }
   function onEnd(src, fn) {
     try { if (src.addEventListener) { src.addEventListener('ended', fn); return; } } catch (e) { /* ignore */ }
@@ -108,7 +119,11 @@
       var ret = gainNode(c, 0.55);
       o.rvIn.connect(hp); hp.connect(conv); conv.connect(ret); ret.connect(o.master);
     } catch (e) { /* no reverb */ }
-    o.musicDry = gainNode(c, live ? musicLevel() : vol.music); o.musicDry.connect(o.master);
+    o.musicDry = gainNode(c, live ? musicLevel() : vol.music);
+    try { // trim inaudible sub rumble so it does not eat headroom
+      var mhp = c.createBiquadFilter(); mhp.type = 'highpass'; mhp.frequency.value = 45; mhp.Q.value = 0.6;
+      o.musicDry.connect(mhp); mhp.connect(o.master);
+    } catch (e) { o.musicDry.connect(o.master); }
     o.musicWet = gainNode(c, live ? musicLevel() : vol.music); o.musicWet.connect(o.rvIn);
     o.sfxDry = gainNode(c, vol.sfx); o.sfxDry.connect(o.master);
     o.sfxWet = gainNode(c, vol.sfx); o.sfxWet.connect(o.rvIn);
@@ -139,8 +154,9 @@
 
   // ------------------------------------------------------------- synth voice
   // P: instrument preset (see music.js). Returns nothing; nodes clean themselves up.
-  function playNote(o, dest, P, midi, t, dur, vel, rng) {
-    if (o.voices >= MAX_MUSIC_VOICES) return;
+  function playNote(o, dest, P, midi, t, dur, vel, rng, owner) {
+    // live: ~lookahead-window concurrency cap. Offline renders schedule everything up front, so no cap there.
+    if (o.live && o.voices >= MAX_MUSIC_VOICES) return;
     var c = o.ctx, f = mtof(midi), nodes = [], srcs = [];
     var amp = c.createGain(); amp.gain.value = 0; nodes.push(amp);
     var head = amp;
@@ -209,7 +225,11 @@
     }
     for (var j = 0; j < srcs.length; j++) { srcs[j].start(t); srcs[j].stop(end); }
     o.voices++;
-    onEnd(srcs[srcs.length - 1], function () { o.voices--; disc(srcs); disc(nodes); });
+    if (owner) owner.active.push(srcs);
+    onEnd(srcs[srcs.length - 1], function () {
+      o.voices--; disc(srcs); disc(nodes);
+      if (owner) { var k = owner.active.indexOf(srcs); if (k >= 0) owner.active.splice(k, 1); }
+    });
   }
 
   // --------------------------------------------------- layer renderer (sfx & drums)
@@ -301,7 +321,7 @@
     this.o = o; this.c = comp; this.id = id; this.spb = comp.spb; this.t0 = t0;
     this.out = gainNode(c, 0); this.out.connect(o.musicDry);
     this.wet = gainNode(c, 0); this.wet.connect(o.musicWet);
-    this.buses = {}; this.lanes = {}; this.all = [this.out, this.wet];
+    this.buses = {}; this.lanes = {}; this.all = [this.out, this.wet]; this.active = [];
     this.seg = comp.intro ? 'intro' : 'main'; this.segStart = 0; this.idx = 0; this.cursor = 0;
     this.done = false; this.stopAt = Infinity; this.endTime = Infinity;
     this.rng = mkRng(hashStr(id) ^ ((Date.now() & 0xffff) << 3));
@@ -317,8 +337,9 @@
     }
   };
   Player.prototype.stop = function (t, fade) {
+    fade = Math.max(0.03, fade || 0); // never hard-cut (clicks)
     this.level(0, t, fade);
-    this.stopAt = t + Math.max(0.01, fade);
+    this.stopAt = t + fade;
   };
   Player.prototype.bus = function (pk) {
     var b = this.buses[pk];
@@ -375,26 +396,27 @@
     return lg;
   };
   Player.prototype.play = function (ev, when) {
+    if (this.only && !this.only[ev.p]) return;
     var o = this.o, c = o.ctx, rng = this.rng, h = this.c.hum, m = md();
     var t = Math.max(c.currentTime + 0.002, when + (rng() - 0.5) * 2 * h[0]);
     var vj = 1 + (rng() - 0.5) * 2 * h[1];
     if (ev.k) {
       var K = m && m.kit[ev.k];
       if (!K) return;
-      var dest = this.lane(ev.p, ev.k, K);
-      if (K.rp && c.createStereoPanner) {
-        var sp = c.createStereoPanner(); sp.pan.value = (rng() * 2 - 1) * K.rp; sp.connect(dest); dest = sp;
-        setTimeout(function () { try { sp.disconnect(); } catch (e) { /* ignore */ } }, 4000);
-      }
-      renderLayers(o, dest, K.L, Math.max(c.currentTime + 0.002, when + (rng() - 0.5) * h[0]), clamp(ev.v * vj, 0.05, 1.3), 1, rng);
+      var dest = this.lane(ev.p, ev.k, K), sp = null;
+      if (K.rp && c.createStereoPanner) { sp = c.createStereoPanner(); sp.pan.value = (rng() * 2 - 1) * K.rp; sp.connect(dest); dest = sp; }
+      var res = renderLayers(o, dest, K.L, Math.max(c.currentTime + 0.002, when + (rng() - 0.5) * h[0]), clamp(ev.v * vj, 0.05, 1.3), 1, rng);
+      if (sp) { if (res.src) onEnd(res.src, function () { try { sp.disconnect(); } catch (e) { /* ignore */ } }); else sp.disconnect(); }
       return;
     }
     var b = this.bus(ev.p);
     if (!b.P) return;
     var gate = ev.g || b.cfg.gate || b.P.gate || 0.92;
-    var vel = clamp((b.cfg.vel || 0.8) * ev.v * vj, 0.05, 1.3);
+    // gentle metric accent: downbeat > beats > off-beats
+    var bp = ev.t % this.c.meter, acc = bp < 1e-6 ? 1.06 : (Math.abs(bp - Math.round(bp)) < 1e-6 ? 1 : 0.9);
+    var vel = clamp((b.cfg.vel || 0.8) * ev.v * vj * acc, 0.05, 1.3);
     var dur = ev.d * this.spb * gate;
-    for (var i = 0; i < ev.n.length; i++) playNote(o, b.input, b.P, ev.n[i], t, dur, vel, rng);
+    for (var i = 0; i < ev.n.length; i++) playNote(o, b.input, b.P, ev.n[i], t, dur, vel, rng, this);
   };
   Player.prototype.skipTo = function (beat) {
     var cp = this.c, guard = 0;
@@ -435,7 +457,13 @@
     if (this.t0 + this.cursor * this.spb < t - CATCHUP) this.skipTo((t - this.t0) / this.spb);
     if (t + 0.05 < this.stopAt) this.schedule(Math.min(ahead, this.stopAt));
   };
-  Player.prototype.dispose = function () { disc(this.all); this.all = []; this.buses = {}; this.lanes = {}; };
+  Player.prototype.dispose = function () {
+    // output is already silent here: cut every still-running voice (long pads/drones) to free CPU
+    var act = this.active.slice(), when = this.o.ctx.currentTime;
+    for (var i = 0; i < act.length; i++) for (var j = 0; j < act[i].length; j++) { try { act[i][j].stop(when); } catch (e) { /* ignore */ } }
+    this.active = [];
+    disc(this.all); this.all = []; this.buses = {}; this.lanes = {};
+  };
 
   // ------------------------------------------------------------------ SFX
   var NPC = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
@@ -473,16 +501,16 @@
     text_blip:   { v: 0.8, L: [{ w: 'square', f: [880, 860], d: 0.028, v: 0.07, lp: 3000 }, { w: 'triangle', f: 1760, d: 0.02, v: 0.03 }] },
     pause:       { rv: 0.3, L: [{ f: nf('E6'), d: 0.25, v: 0.22, fm: [3, 0.7] }, { f: nf('B5'), t: 0.09, d: 0.4, v: 0.22, fm: [3, 0.6] }] },
     // ---- movement
-    jump:        { rv: 0.05, L: [{ n: 1, f: [500, 1600], q: 0.9, a: 0.015, d: 0.14, v: 0.22 }, { w: 'triangle', f: [170, 330], d: 0.1, v: 0.16 }] },
+    jump:        { v: 1.5, rv: 0.05, L: [{ n: 1, f: [500, 1600], q: 0.9, a: 0.015, d: 0.14, v: 0.22 }, { w: 'triangle', f: [170, 330], d: 0.1, v: 0.16 }] },
     double_jump: { rv: 0.3, L: [{ n: 1, f: [900, 3600], q: 0.8, a: 0.04, d: 0.24, v: 0.26, e: 'swell' }, { f: nf('A6'), t: 0.05, d: 0.4, v: 0.1, fm: [3.5, 1.2, 0.25] }, { f: nf('E7'), t: 0.09, d: 0.32, v: 0.05 }] },
     land:        { rv: 0.03, L: [{ f: [115, 48], fs: 0.08, d: 0.13, v: 0.45 }, { n: 1, ft: 'lowpass', f: [900, 250], d: 0.08, v: 0.25 }] },
-    backdash:    { rv: 0.06, L: [{ n: 1, f: [2600, 650], q: 1.4, a: 0.012, d: 0.21, v: 0.35 }, { n: 1, ft: 'highpass', f: 4500, d: 0.07, v: 0.07 }] },
+    backdash:    { v: 1.3, rv: 0.06, L: [{ n: 1, f: [2600, 650], q: 1.4, a: 0.012, d: 0.21, v: 0.35 }, { n: 1, ft: 'highpass', f: 4500, d: 0.07, v: 0.07 }] },
     step:        { v: 0.7, L: [{ n: 1, ft: 'lowpass', f: 520, d: 0.045, v: 0.11 }, { f: [95, 62], d: 0.04, v: 0.07 }] },
     super_jump:  { rv: 0.2, L: [{ w: 'sawtooth', f: [140, 880], d: 0.38, v: 0.11, lp: [700, 4200] }, { n: 1, f: [450, 4200], q: 1, a: 0.06, d: 0.42, v: 0.3, e: 'swell' }, { f: [280, 1200], d: 0.32, v: 0.13 }] },
     // ---- player combat
-    swing_light: { rv: 0.05, L: [{ n: 1, f: [1500, 5200], q: 2.4, a: 0.025, d: 0.12, v: 0.42, e: 'swell' }, { n: 1, ft: 'highpass', f: 6500, t: 0.03, d: 0.06, v: 0.08 }] },
+    swing_light: { v: 1.4, rv: 0.05, L: [{ n: 1, f: [1500, 5200], q: 2.4, a: 0.025, d: 0.12, v: 0.42, e: 'swell' }, { n: 1, ft: 'highpass', f: 6500, t: 0.03, d: 0.06, v: 0.08 }] },
     swing_heavy: { rv: 0.08, L: [{ n: 1, f: [380, 1900], q: 1.4, a: 0.06, d: 0.26, v: 0.55, e: 'swell' }, { w: 'sawtooth', f: [95, 62], d: 0.22, v: 0.09, lp: 420 }] },
-    whip:        { rv: 0.12, L: [{ n: 1, f: [700, 2800], q: 1.8, a: 0.05, d: 0.11, v: 0.25, e: 'swell' }, { n: 1, ft: 'highpass', f: 2200, t: 0.1, d: 0.05, v: 0.65 }, { w: 'square', f: [2600, 700], t: 0.1, d: 0.03, v: 0.16 }] },
+    whip:        { v: 0.7, rv: 0.12, L: [{ n: 1, f: [700, 2800], q: 1.8, a: 0.05, d: 0.11, v: 0.25, e: 'swell' }, { n: 1, ft: 'highpass', f: 2200, t: 0.1, d: 0.05, v: 0.65 }, { w: 'square', f: [2600, 700], t: 0.1, d: 0.03, v: 0.16 }] },
     punch:       { rv: 0.04, L: [{ f: [190, 58], fs: 0.06, d: 0.13, v: 0.6 }, { n: 1, ft: 'lowpass', f: [2600, 500], d: 0.06, v: 0.4 }] },
     hit_flesh:   { rv: 0.05, L: [{ f: [170, 52], fs: 0.07, d: 0.15, v: 0.55 }, { n: 1, f: [1300, 380], q: 1, d: 0.1, v: 0.5 }, { n: 1, ft: 'lowpass', f: 3200, d: 0.025, v: 0.3 }] },
     hit_metal:   { rv: 0.25, L: cat(metal(560, 0.42, 0.16), [{ n: 1, ft: 'highpass', f: 3200, d: 0.04, v: 0.35 }, { w: 'square', f: [620, 560], d: 0.05, v: 0.06, lp: 4000 }]) },
@@ -502,27 +530,27 @@
     // ---- enemies
     enemy_die:     { rv: 0.15, L: [{ n: 1, ft: 'lowpass', f: [3200, 300], d: 0.38, v: 0.45 }, { w: 'square', f: [620, 80], d: 0.3, v: 0.12, lp: 2000 }, { f: [210, 50], d: 0.22, v: 0.3 }] },
     enemy_die_big: { rv: 0.3, L: [{ n: 1, ft: 'lowpass', f: [4000, 200], d: 0.8, v: 0.6 }, { f: [150, 32], fs: 0.5, d: 0.7, v: 0.55 }, { w: 'square', f: [500, 60], d: 0.6, v: 0.1, lp: 1500 }, { n: 1, f: [1200, 300], q: 1, t: 0.12, d: 0.5, v: 0.3 }] },
-    explosion:   { rv: 0.35, L: [{ n: 1, ft: 'lowpass', f: [4200, 180], d: 0.95, v: 0.75 }, { f: [120, 30], fs: 0.4, d: 0.7, v: 0.6 }, { n: 1, f: [1100, 300], q: 1, d: 0.55, v: 0.3 }, { n: 1, ft: 'highpass', f: 3000, d: 0.08, v: 0.25 }] },
-    fireball:    { rv: 0.15, L: [{ n: 1, f: [600, 1500], q: 1.1, a: 0.04, d: 0.38, v: 0.4, e: 'swell' }, { n: 1, ft: 'lowpass', f: [2500, 800], d: 0.3, v: 0.2, tr: [22, 0.8] }, { w: 'sawtooth', f: [300, 150], d: 0.25, v: 0.06, lp: 800 }] },
-    projectile:  { rv: 0.08, L: [{ w: 'square', f: [1200, 480], d: 0.13, v: 0.1, lp: 3000 }, { n: 1, f: [3200, 1500], q: 3, d: 0.11, v: 0.16 }] },
+    explosion:   { v: 0.85, rv: 0.35, L: [{ n: 1, ft: 'lowpass', f: [4200, 180], d: 0.95, v: 0.75 }, { f: [120, 30], fs: 0.4, d: 0.7, v: 0.6 }, { n: 1, f: [1100, 300], q: 1, d: 0.55, v: 0.3 }, { n: 1, ft: 'highpass', f: 3000, d: 0.08, v: 0.25 }] },
+    fireball:    { v: 1.3, rv: 0.15, L: [{ n: 1, f: [600, 1500], q: 1.1, a: 0.04, d: 0.38, v: 0.4, e: 'swell' }, { n: 1, ft: 'lowpass', f: [2500, 800], d: 0.3, v: 0.2, tr: [22, 0.8] }, { w: 'sawtooth', f: [300, 150], d: 0.25, v: 0.06, lp: 800 }] },
+    projectile:  { v: 1.3, rv: 0.08, L: [{ w: 'square', f: [1200, 480], d: 0.13, v: 0.1, lp: 3000 }, { n: 1, f: [3200, 1500], q: 3, d: 0.11, v: 0.16 }] },
     magic_cast:  { rv: 0.4, L: [{ f: [400, 1250], d: 0.5, v: 0.16, fm: [1.5, 2, 0.4] }, { n: 1, ft: 'highpass', f: [2000, 6500], a: 0.12, d: 0.5, v: 0.1, e: 'swell' }, { w: 'triangle', f: [800, 2400], t: 0.05, d: 0.4, v: 0.06, vib: [9, 40] }] },
-    bone_rattle: { rv: 0.12, L: [{ n: 1, f: 2300, q: 6, d: 0.03, v: 0.35, rep: [7, 0.034], rnd: 450 }, { w: 'square', f: 900, d: 0.02, v: 0.05, rep: [5, 0.047], rnd: 300, lp: 3000 }] },
+    bone_rattle: { v: 1.6, rv: 0.12, L: [{ n: 1, f: 2300, q: 6, d: 0.03, v: 0.35, rep: [7, 0.034], rnd: 450 }, { w: 'square', f: 900, d: 0.02, v: 0.05, rep: [5, 0.047], rnd: 300, lp: 3000 }] },
     ghost_wail:  { rv: 0.6, L: [{ f: [480, 720, 560], a: 0.3, d: 1.1, v: 0.18, vib: [5, 60], e: 'swell' }, { w: 'triangle', f: [720, 1080, 840], a: 0.35, d: 1.1, v: 0.07, vib: [5.5, 80], e: 'swell' }, { n: 1, f: [800, 600], q: 5, a: 0.3, d: 1, v: 0.12, e: 'swell' }] },
     bat_screech: { rv: 0.15, L: [{ w: 'square', f: [3000, 4300], d: 0.075, v: 0.06, lp: 7000, rep: [3, 0.07] }, { w: 'sawtooth', f: [2600, 3900], d: 0.075, v: 0.04, rep: [3, 0.07], lp: 8000 }] },
     slime:       { rv: 0.06, L: [{ f: [320, 110], d: 0.17, v: 0.4, vib: [28, 300] }, { n: 1, ft: 'lowpass', f: [1500, 300], d: 0.15, v: 0.2 }, { f: [180, 260], t: 0.1, d: 0.08, v: 0.15 }] },
     page_flutter:{ rv: 0.15, L: [{ n: 1, f: 3600, q: 1.4, d: 0.03, v: 0.24, rep: [9, 0.028], rnd: 700 }, { n: 1, ft: 'highpass', f: 6000, a: 0.05, d: 0.27, v: 0.05, e: 'swell' }] },
     ink_splash:  { rv: 0.12, L: [{ n: 1, ft: 'lowpass', f: [2600, 400], d: 0.26, v: 0.42 }, { f: [720, 190], d: 0.13, v: 0.24 }, { n: 1, f: 1900, q: 4, t: 0.05, d: 0.06, v: 0.18, rep: [3, 0.05], rnd: 600 }] },
     roar:        { rv: 0.4, L: [{ w: 'sawtooth', f: [105, 82, 70], a: 0.12, d: 1.5, v: 0.26, lp: [500, 1500, 700], vib: [17, 90] }, { w: 'sawtooth', f: [111, 86, 74], a: 0.12, d: 1.5, v: 0.2, lp: 900, vib: [13, 70] }, { n: 1, f: [480, 300], q: 1, a: 0.12, d: 1.5, v: 0.5, e: 'swell' }, { f: [58, 40], d: 1.4, v: 0.45 }] },
-    boss_die:    { rv: 0.45, L: cat(boomAt(0, 1, 1), boomAt(0.28, 0.8, 1.2), boomAt(0.55, 0.85, 0.9), boomAt(0.82, 0.75, 1.3), boomAt(1.1, 0.9, 1), boomAt(1.45, 1.1, 0.8),
+    boss_die:    { v: 0.72, rv: 0.45, L: cat(boomAt(0, 1, 1), boomAt(0.28, 0.8, 1.2), boomAt(0.55, 0.85, 0.9), boomAt(0.82, 0.75, 1.3), boomAt(1.1, 0.9, 1), boomAt(1.45, 1.1, 0.8),
                    [{ n: 1, ft: 'lowpass', f: [600, 80], a: 0.3, d: 2.4, v: 0.4, e: 'swell' }, { f: [70, 28], t: 1.45, d: 1, v: 0.5 }]) },
     gear:        { rv: 0.2, L: cat([{ w: 'square', f: 180, d: 0.06, v: 0.16, lp: 2000 }], metal(950, 0.12, 0.08), [{ n: 1, f: 2600, q: 5, t: 0.07, d: 0.035, v: 0.25, rep: [3, 0.05] }]) },
     water_splash:{ rv: 0.25, L: [{ n: 1, ft: 'lowpass', f: [5200, 800], d: 0.55, v: 0.4 }, { n: 1, f: [1300, 400], q: 2, d: 0.32, v: 0.25 }, { f: [1500, 2600], t: 0.1, d: 0.05, v: 0.1, rep: [4, 0.07], rnd: 700 }] },
     thunder:     { rv: 0.5, L: [{ n: 1, ft: 'highpass', f: 2500, d: 0.12, v: 0.35 }, { n: 1, ft: 'lowpass', f: [2200, 150], d: 2.6, v: 0.7 }, { n: 1, ft: 'lowpass', f: [500, 80], t: 0.15, a: 0.25, d: 3.2, v: 0.6, e: 'swell' }, { f: [52, 30], t: 0.05, d: 2.2, v: 0.3 }] },
     stomp:       { rv: 0.15, L: [{ f: [95, 34], fs: 0.12, d: 0.32, v: 0.8 }, { n: 1, ft: 'lowpass', f: [800, 100], d: 0.25, v: 0.5 }] },
     // ---- world / pickups
-    heart:       { rv: 0.15, L: [{ w: 'square', f: nf('E6'), d: 0.06, v: 0.1, lp: 6000 }, { w: 'square', f: nf('B6'), t: 0.06, d: 0.14, v: 0.1, lp: 6000 }, { f: nf('B6'), t: 0.06, d: 0.2, v: 0.08 }] },
+    heart:       { v: 1.2, rv: 0.15, L: [{ w: 'square', f: nf('E6'), d: 0.06, v: 0.1, lp: 6000 }, { w: 'square', f: nf('B6'), t: 0.06, d: 0.14, v: 0.1, lp: 6000 }, { f: nf('B6'), t: 0.06, d: 0.2, v: 0.08 }] },
     heart_big:   { rv: 0.25, L: [{ w: 'square', f: nf('E6'), ar: [0, 4, 7, 12], st: 0.055, d: 0.12, v: 0.09, lp: 6000 }, { f: nf('E7'), t: 0.22, d: 0.4, v: 0.1, fm: [2, 0.8, 0.3] }, { n: 1, ft: 'highpass', f: 6000, t: 0.15, d: 0.3, v: 0.05 }] },
-    gold:        { rv: 0.2, L: [{ w: 'square', f: nf('B6'), d: 0.05, v: 0.08, lp: 7000 }, { w: 'square', f: nf('E7'), t: 0.05, d: 0.28, v: 0.08, lp: 7000 }, { f: nf('E7'), t: 0.05, d: 0.3, v: 0.06, fm: [1.41, 1.2, 0.2] }] },
+    gold:        { v: 1.3, rv: 0.2, L: [{ w: 'square', f: nf('B6'), d: 0.05, v: 0.08, lp: 7000 }, { w: 'square', f: nf('E7'), t: 0.05, d: 0.28, v: 0.08, lp: 7000 }, { f: nf('E7'), t: 0.05, d: 0.3, v: 0.06, fm: [1.41, 1.2, 0.2] }] },
     item_get:    { rv: 0.35, L: [{ f: nf('G5'), ar: [0, 4, 7, 12], st: 0.07, d: 0.6, v: 0.16, fm: [3.5, 1.4, 0.4] }, { w: 'triangle', f: nf('G4'), t: 0.21, d: 0.6, v: 0.1, vib: [5, 10], e: 'flat' }, { w: 'triangle', f: nf('D5'), t: 0.21, d: 0.6, v: 0.08, e: 'flat' }] },
     relic_get:   { rv: 0.45, L: cat([{ w: 'sawtooth', f: nf('D4'), ar: [0, 7, 12], st: 0.16, d: 0.25, v: 0.08, lp: 2500 }],
                    brass(0.5, 'D5', 1.4, 0.05), brass(0.5, 'F#5', 1.4, 0.045), brass(0.5, 'A5', 1.4, 0.045), brass(0.5, 'D6', 1.4, 0.035),
@@ -540,12 +568,12 @@
     seal_break:  { rv: 0.55, L: [{ n: 1, ft: 'highpass', f: 4000, d: 0.35, v: 0.35 }, { f: 3000, d: 0.15, v: 0.06, rep: [8, 0.025], rnd: 1200 }, { f: nf('A5'), t: 0.05, d: 1.6, v: 0.12, fm: [3.5, 1.8, 0.6] }, { f: nf('E6'), t: 0.12, d: 1.4, v: 0.1, fm: [3.5, 1.5, 0.5] }, { f: nf('C#6'), t: 0.2, d: 1.3, v: 0.08 }] },
     lever:       { rv: 0.15, L: [{ w: 'square', f: [400, 250], d: 0.04, v: 0.14, lp: 2500 }, { n: 1, f: 1800, q: 3, d: 0.03, v: 0.3 }, { f: [140, 70], t: 0.08, d: 0.15, v: 0.45 }, { n: 1, ft: 'lowpass', f: 700, t: 0.08, d: 0.1, v: 0.25 }] },
     // ---- subweapons / spells
-    dagger_throw:{ rv: 0.05, L: [{ n: 1, f: [3200, 6400], q: 3, a: 0.012, d: 0.11, v: 0.35, e: 'swell' }, { f: [2600, 1800], d: 0.06, v: 0.06 }] },
-    axe_throw:   { rv: 0.08, L: [{ n: 1, f: 1300, q: 2, a: 0.03, d: 0.07, v: 0.3, e: 'swell', rep: [6, 0.075] }, { w: 'sawtooth', f: [200, 150], d: 0.45, v: 0.04, lp: 700, tr: [13, 0.9] }] },
+    dagger_throw:{ v: 1.3, rv: 0.05, L: [{ n: 1, f: [3200, 6400], q: 3, a: 0.012, d: 0.11, v: 0.35, e: 'swell' }, { f: [2600, 1800], d: 0.06, v: 0.06 }] },
+    axe_throw:   { v: 1.4, rv: 0.08, L: [{ n: 1, f: 1300, q: 2, a: 0.03, d: 0.07, v: 0.3, e: 'swell', rep: [6, 0.075] }, { w: 'sawtooth', f: [200, 150], d: 0.45, v: 0.04, lp: 700, tr: [13, 0.9] }] },
     holy_water:  { rv: 0.25, L: [{ f: 2800, d: 0.12, v: 0.07, rep: [3, 0.04], rnd: 600 }, { n: 1, ft: 'highpass', f: 4000, d: 0.06, v: 0.25 }, { n: 1, f: [500, 1300], q: 0.9, t: 0.08, a: 0.08, d: 0.6, v: 0.4, e: 'swell' }, { n: 1, ft: 'lowpass', f: 2000, t: 0.1, d: 0.5, v: 0.15, tr: [25, 0.9] }] },
-    cross_throw: { rv: 0.25, L: [{ w: 'sawtooth', f: 230, d: 0.7, v: 0.06, lp: 1200, tr: [11, 0.9] }, { f: 460, d: 0.7, v: 0.12, tr: [11, 0.9], vib: [11, 30] }, { n: 1, f: [2500, 1500], q: 3, d: 0.12, v: 0.2 }] },
+    cross_throw: { v: 1.4, rv: 0.25, L: [{ w: 'sawtooth', f: 230, d: 0.7, v: 0.06, lp: 1200, tr: [11, 0.9] }, { f: 460, d: 0.7, v: 0.12, tr: [11, 0.9], vib: [11, 30] }, { n: 1, f: [2500, 1500], q: 3, d: 0.12, v: 0.2 }] },
     stopwatch:   { rv: 0.7, L: [{ n: 1, ft: 'highpass', f: 5000, d: 0.015, v: 0.5 }, { n: 1, ft: 'highpass', f: 4200, t: 0.12, d: 0.015, v: 0.45 }, { f: nf('E6'), t: 0.2, a: 0.4, d: 1.4, v: 0.08, e: 'swell', vib: [3, 20] }, { f: nf('A6'), t: 0.2, a: 0.4, d: 1.4, v: 0.06, e: 'swell' }, { f: [880, 440], t: 0.2, d: 1.2, v: 0.06, fm: [1.5, 3, 1] }] },
-    quill_throw: { rv: 0.05, L: [{ n: 1, f: [4500, 8000], q: 4, a: 0.01, d: 0.08, v: 0.35, e: 'swell' }, { f: [3000, 2200], d: 0.05, v: 0.05 }] },
+    quill_throw: { v: 1.3, rv: 0.05, L: [{ n: 1, f: [4500, 8000], q: 4, a: 0.01, d: 0.08, v: 0.35, e: 'swell' }, { f: [3000, 2200], d: 0.05, v: 0.05 }] },
     ink_bottle:  { rv: 0.15, L: [{ f: 2600, d: 0.1, v: 0.07, rep: [2, 0.035], rnd: 500 }, { n: 1, ft: 'highpass', f: 3500, d: 0.05, v: 0.25 }, { n: 1, ft: 'lowpass', f: [2400, 400], t: 0.06, d: 0.3, v: 0.4 }, { f: [600, 180], t: 0.06, d: 0.12, v: 0.2 }] },
     page_orbit:  { rv: 0.4, L: [{ n: 1, f: 3200, q: 1.5, d: 0.03, v: 0.18, rep: [10, 0.04], rnd: 600 }, { f: nf('E6'), a: 0.1, d: 0.6, v: 0.06, vib: [7, 40], e: 'swell' }, { f: nf('B6'), t: 0.1, a: 0.1, d: 0.5, v: 0.04, vib: [6, 40], e: 'swell' }] },
     spell_fire:  { rv: 0.3, L: [{ n: 1, ft: 'lowpass', f: [800, 3000, 600], a: 0.08, d: 0.8, v: 0.55, e: 'swell' }, { n: 1, f: 2000, q: 1, d: 0.7, v: 0.2, tr: [28, 0.9] }, { w: 'sawtooth', f: [90, 60], d: 0.7, v: 0.1, lp: 500 }] },
@@ -571,7 +599,7 @@
   function playSfx(o, def, t, opts, rng) {
     opts = opts || {};
     var c = o.ctx;
-    var out = gainNode(c, clamp(opts.vol == null ? 1 : opts.vol, 0, 2) * (def.v || 1)), nodes = [out], node = out;
+    var out = gainNode(c, clamp(opts.vol == null ? 1 : opts.vol, 0, 2) * (def.v || 1) * SFX_GAIN), nodes = [out], node = out;
     var pan = clamp(opts.pan || 0, -1, 1);
     if (pan && c.createStereoPanner) { var sp = c.createStereoPanner(); sp.pan.value = pan; out.connect(sp); node = sp; nodes.push(sp); }
     node.connect(o.sfxDry);
@@ -615,6 +643,7 @@
     if (!comp) return false;
     var t = ctx.currentTime, fade = opts.fade == null ? 1.0 : Math.max(0, +opts.fade || 0), prev = cur;
     if (prev) { prev.stop(t, fade); fading.push(prev); }
+    while (fading.length > MAX_FADING) fading.shift().dispose(); // rapid track switching: drop the oldest tails
     var p = new Player(g, comp, id, t + 0.06);
     p.level(1, t, prev ? fade : (opts.fade != null ? fade : 0.02));
     cur = p;
@@ -675,6 +704,21 @@
   }
 
   // ------------------------------------------------------------- unlock
+  var hooked = false;
+  function resumeIfNeeded() {
+    try { if (ctx && ctx.state !== 'running' && ctx.state !== 'closed' && ctx.resume) { var pr = ctx.resume(); if (pr && pr.catch) pr.catch(function () { /* ignore */ }); } }
+    catch (e) { /* ignore */ }
+  }
+  function installResumeHooks() { // iOS interruptions / Safari tab switches leave the context suspended: resume on next gesture
+    if (hooked) return;
+    hooked = true;
+    try {
+      var d = root.document;
+      if (!d || !d.addEventListener) return;
+      ['pointerdown', 'touchend', 'keydown', 'mousedown'].forEach(function (ev) { d.addEventListener(ev, resumeIfNeeded, true); });
+      d.addEventListener('visibilitychange', function () { if (!d.hidden) resumeIfNeeded(); });
+    } catch (e) { /* ignore */ }
+  }
   function unlock() {
     var AC = ACclass();
     if (!AC) return false;
@@ -693,6 +737,7 @@
         s.buffer = b; s.connect(ctx.destination); s.start(0);
       } catch (e) { /* ignore */ }
       unlocked = true;
+      installResumeHooks();
       if (pending) { var p = pending; pending = null; curId = null; playMusic(p.id, p.opts); }
     } catch (e) {
       warnOnce('unlock', 'Web Audio unavailable: ' + (e && e.message));
@@ -803,7 +848,7 @@
     };
     curSpeech = h;
     var handle = { cancel: function () { h.cancel(); } };
-    if (!ttsUsable()) { h.toTimer(); return handle; }
+    if (!str || !ttsUsable()) { h.toTimer(); return handle; }
     var voice = pickVoice(key);
     if (!voice) { h.toTimer(); return handle; }
     var chunks = splitText(str || ' '), idx = 0, volume = clamp(vol.voice * vol.master, 0, 1);
@@ -845,6 +890,19 @@
   }
 
   // ------------------------------------------------------------- offline render (dev helper)
+  function bandStats(buf) { // crude one-pole band split: <200, 200-800, 800-3k, >3k Hz; plus L/R rms
+    var sr = buf.sampleRate, k1 = 1 - Math.exp(-2 * Math.PI * 200 / sr), k2 = 1 - Math.exp(-2 * Math.PI * 800 / sr), k3 = 1 - Math.exp(-2 * Math.PI * 3000 / sr);
+    var e = [0, 0, 0, 0], lr = [], n = 0;
+    for (var ch = 0; ch < buf.numberOfChannels; ch++) {
+      var d = buf.getChannelData(ch), a = 0, b = 0, c = 0, s2 = 0;
+      for (var i = 0; i < d.length; i++) {
+        var x = d[i]; a += (x - a) * k1; b += (x - b) * k2; c += (x - c) * k3;
+        e[0] += a * a; e[1] += (b - a) * (b - a); e[2] += (c - b) * (c - b); e[3] += (x - c) * (x - c); s2 += x * x;
+      }
+      n += d.length; lr.push(Math.sqrt(s2 / d.length));
+    }
+    return { bands: e.map(function (v) { return Math.sqrt(v / n); }), lr: lr };
+  }
   function stats(buf) {
     var peak = 0, sum = 0, n = 0;
     for (var ch = 0; ch < buf.numberOfChannels; ch++) {
@@ -863,21 +921,43 @@
       seconds = Math.max(0.1, +seconds || (kind === 'music' ? 12 : 3));
       var oc;
       try { oc = new OAC(2, Math.ceil(sr * seconds), sr); } catch (e) { reject(e); return; }
-      var og = buildGraph(oc, false, !!opts.raw);
+      var og = buildGraph(oc, false, !!opts.raw), tS = nowMs();
       try {
         if (kind === 'music') {
           var m = md();
           if (!m || !m.tracks[id]) { reject(new Error('unknown music id ' + id)); return; }
           var p = new Player(og, m.compile(id), id, 0.05);
+          if (opts.parts) { p.only = {}; for (var pi = 0; pi < opts.parts.length; pi++) p.only[opts.parts[pi]] = 1; }
           p.level(1, 0, 0);
-          p.schedule(seconds);
+          if (typeof oc.suspend === 'function' && seconds > 3) {
+            // render like the live scheduler: create nodes just in time (suspend every second, schedule ahead, resume)
+            var STEP = 1;
+            var plan = function (T) {
+              if (T >= seconds - 0.05) return;
+              oc.suspend(T).then(function () {
+                p.schedule(Math.min(seconds, T + STEP + 0.5));
+                plan(T + STEP);
+                oc.resume();
+              });
+            };
+            p.schedule(Math.min(seconds, STEP + 0.5));
+            plan(STEP);
+          } else p.schedule(seconds);
         } else if (kind === 'sfx') {
           if (!SFX[id]) { reject(new Error('unknown sfx ' + id)); return; }
           playSfx(og, SFX[id], 0.05, opts, mkRng(99));
         } else { reject(new Error('kind must be music or sfx')); return; }
       } catch (e) { reject(e); return; }
       var settled = false;
-      function ok(b) { if (settled || !b) return; settled = true; resolve(stats(b)); }
+      var tR = nowMs();
+      function ok(b) {
+        if (settled || !b) return;
+        settled = true;
+        var r = stats(b);
+        if (opts.analyze) { var bs = bandStats(b); r.bands = bs.bands; r.lr = bs.lr; r.schedMs = tR - tS; r.renderMs = nowMs() - tR; }
+        if (opts.buffer) r.buffer = b;
+        resolve(r);
+      }
       oc.oncomplete = function (ev) { ok(ev.renderedBuffer); };
       try {
         var pr = oc.startRendering();
