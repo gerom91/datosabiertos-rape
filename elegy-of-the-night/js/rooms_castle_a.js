@@ -264,4 +264,157 @@
     b.enemy(44, 10, 'mirror_wraith');
     b.enemy(70, 11, 'gargoyle');
   });
+
+  // =============================== LONG LIBRARY ===============================
+
+  // L1 — vestibule
+  R({ id: 'lib_entry', area: 'library', x: 30, y: 17, w: 3, h: 1, lvl: 1, entry: 'L0' }, (b) => {
+    b.shell();
+    b.door('L', 0);
+    b.door('R', 0);
+    // bookcase arches hanging from the ceiling
+    b.stamp(14, 2, ['######', '######', ' #### ']);
+    b.stamp(46, 2, ['######', '######', ' #### ']);
+    // reading gallery on wooden walkways
+    b.plat(21, 30, 8);
+    b.plat(36, 43, 5);
+    b.plat(52, 61, 8);
+    // a low step up to the reading desks
+    b.fill(32, 11, 41, 11);
+    b.candle(8, 10);
+    b.candle(25, 6);
+    b.candle(39, 3, 'heart_big');
+    b.candle(56, 6);
+    b.candle(66, 10);
+    b.enemy(26, 5, 'flying_tome');
+    b.enemy(50, 4, 'flying_tome');
+  });
+
+  // L2 — the great hall of the Long Library: tall bookcases, walkways and ladders
+  R({ id: 'lib_hall', area: 'library', x: 33, y: 16, w: 5, h: 3, lvl: 1, entry: 'L1', gates: {} }, (b) => {
+    b.shell();
+    b.door('L', 1);
+    b.door('R', 2);
+    b.door('R', 0);
+    // ---- west: entry walkway and the great stair down to the reading floor
+    b.fill(1, 26, 22, 27);
+    b.stairs(35, 38, 13, 'l'); // (35,38) → (23,26)
+    // reading nook under the walkway: a cracked bookcase hides a life vessel
+    b.fill(1, 30, 3, 39);
+    b.fill(4, 30, 4, 39, 'B');
+    b.hidden(4, 37, 'hp_up');
+    // ladder up from the walkway to the west stacks and the high shelf
+    b.plat(15, 18, 22);
+    b.plat(15, 18, 18);
+    b.plat(15, 18, 14);
+    b.fill(1, 12, 12, 13);
+    b.plat(2, 7, 7);
+    b.item(4, 6, 'ember_tome');
+    // ---- centre: a freestanding bookcase tower, arched at its foot
+    b.fill(44, 16, 51, 35);
+    b.stamp(44, 36, ['#      #']);
+    b.plat(53, 56, 36);
+    b.plat(53, 56, 32);
+    b.plat(53, 56, 28);
+    b.plat(53, 56, 24);
+    b.plat(53, 56, 20);
+    // ---- east: walkways at several heights up to the upper stacks door
+    b.fill(58, 26, 100, 27);
+    b.plat(66, 86, 19);
+    b.plat(90, 93, 22);
+    b.plat(94, 97, 18);
+    b.plat(94, 97, 15);
+    b.fill(100, 12, 118, 13);
+    b.plat(76, 84, 33);
+    // ---- light and life
+    b.candle(10, 37);
+    b.candle(28, 37);
+    b.candle(40, 37);
+    b.candle(62, 37);
+    b.candle(80, 30);
+    b.candle(96, 37);
+    b.candle(110, 37);
+    b.candle(8, 23);
+    b.candle(68, 23);
+    b.candle(88, 23);
+    b.candle(76, 16, 'heart_big');
+    b.candle(6, 9);
+    b.candle(47, 13);
+    b.candle(108, 9);
+    b.enemy(16, 39, 'candle_imp');
+    b.enemy(76, 39, 'scholar_ghoul');
+    b.enemy(70, 25, 'scholar_ghoul');
+    b.enemy(30, 18, 'flying_tome');
+    b.enemy(66, 12, 'flying_tome');
+    b.enemy(104, 30, 'flying_tome');
+  });
+
+  // L3 — the Librarian's counter (shop) and a save point
+  R({ id: 'lib_shop', area: 'library', x: 38, y: 18, w: 2, h: 1, lvl: 1, entry: 'L0', darkness: 0.15, decor: ['lamp', 'desk', 'globe', 'lamp'] }, (b) => {
+    b.shell();
+    b.door('L', 0);
+    b.door('R', 0);
+    b.stamp(22, 2, ['####', ' ## ']);
+    b.shop(14, 11);
+    b.save(34, 11);
+    b.candle(6, 9);
+    b.candle(24, 8);
+    b.candle(42, 9);
+  });
+
+  // L4 — reading room with the portal book to the Belmont Archives
+  R({ id: 'lib_portal', area: 'library', x: 40, y: 17, w: 2, h: 2, lvl: 1, entry: 'L1', decor: ['lamp', 'globe', 'window', 'desk', 'lamp'] }, (b) => {
+    b.shell();
+    b.door('L', 1);
+    // mezzanine of stacks over the reading room
+    b.fill(26, 12, 46, 13);
+    b.plat(14, 19, 20);
+    b.plat(20, 24, 16);
+    b.fill(44, 2, 46, 11);
+    b.fill(43, 8, 43, 11, 'B');
+    b.hidden(43, 11, 'red_wine');
+    b.portal(24, 25, 'arc_entry', 5, 11);
+    b.candle(8, 23);
+    b.candle(36, 23);
+    b.candle(16, 17);
+    b.candle(32, 9);
+  });
+
+  // L5 — upper stacks corridor
+  R({ id: 'lib_upper', area: 'library', x: 38, y: 16, w: 4, h: 1, lvl: 1, entry: 'L0' }, (b) => {
+    b.shell();
+    b.door('L', 0);
+    b.door('R', 0);
+    // bookcases hanging from the ceiling, walkways in between
+    b.stamp(12, 2, ['#######', '#######', '#######', ' ##### ']);
+    b.stamp(50, 2, ['#######', '#######', ' ##### ']);
+    b.plat(22, 34, 8);
+    b.plat(38, 44, 5);
+    b.item(41, 4, 'sapphire_ring');
+    b.fill(60, 10, 67, 11);
+    b.stairs(58, 11, 2, 'r');
+    b.stairs(69, 11, 2, 'l');
+    b.plat(74, 82, 8);
+    b.fill(88, 2, 94, 6);
+    b.fill(88, 6, 90, 6, 'B');
+    b.hidden(89, 6, 'bread');
+    b.item(78, 7, 'mana_tonic');
+    b.candle(8, 10);
+    b.candle(28, 6);
+    b.candle(48, 10);
+    b.candle(63, 7);
+    b.candle(84, 10);
+    b.enemy(30, 11, 'candle_imp');
+    b.enemy(70, 11, 'candle_imp');
+    b.enemy(54, 5, 'flying_tome');
+  });
+
+  // L6 — teleporter
+  R({ id: 'lib_tp', area: 'library', x: 42, y: 16, w: 1, h: 1, lvl: 1, darkness: 0.1 }, (b) => {
+    b.shell();
+    b.door('L', 0);
+    b.tp(13, 11);
+    b.candle(6, 9);
+    b.candle(19, 9);
+  });
 })();

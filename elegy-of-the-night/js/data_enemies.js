@@ -851,17 +851,19 @@
   const GA = { l: '#b4b0a4', m: '#87837b', d: '#5d5a54', dd: '#3a3835', horn: '#dcd6c4', eye: '#ff5a1e', eyeH: '#ffd468', moss: '#5a6a3c' };
   const GA_PAL = Object.values(GA);
   // a bat wing pointing "up" from the shoulder (origin), rotated by `a` (negative = swings back/down)
-  function gargWing(c, a, cols, scale) {
+  function gargWing(c, a, cols, kx, ky) {
     c.save();
     c.rotate(a);
-    c.scale(scale || 1, scale || 1);
-    gfx.poly(c, [0, 0, 1.5, -9, 4, -19, 0.5, -14.5, -3, -18, -3.5, -11.5, -8, -13, -6, -5, -2, 1], cols[0]);
-    gfx.poly(c, [-2.5, -7, -3.5, -11.5, -8, -13, -6, -5, -2, 1], cols[1]);
-    gfx.limb(c, 0, 0, 1.5, -9, 1.6, cols[2]);
-    gfx.limb(c, 1.5, -9, 4, -19, 1.1, cols[2]);
-    gfx.limb(c, 1.5, -9, -3, -18, 1, cols[2]);
-    gfx.limb(c, 1.5, -9, -8, -13, 1, cols[2]);
-    gfx.circle(c, 1.5, -9, 1, GA.horn);
+    c.scale(kx, ky);
+    // membrane between the arm bone and the finger bones, scalloped trailing edge
+    gfx.poly(c, [0, 0, 2, -10, 5, -21, 1, -16.5, -2.5, -20, -3.5, -13.5, -8.5, -15, -6.5, -8, -10, -6, -4, 0.5], cols[0]);
+    gfx.poly(c, [-0.5, -5, -3.5, -13.5, -8.5, -15, -6.5, -8, -10, -6, -4, 0.5], cols[1]);
+    gfx.limb(c, 0, 0, 2, -10, 1.9, cols[2]);
+    gfx.limb(c, 2, -10, 5, -21, 1.2, cols[2]);
+    gfx.limb(c, 2, -10, -2.5, -20, 1.1, cols[2]);
+    gfx.limb(c, 2, -10, -8.5, -15, 1.1, cols[2]);
+    gfx.limb(c, 2, -10, -10, -6, 1, cols[2]);
+    gfx.circle(c, 2, -10, 1.2, GA.horn);
     c.restore();
   }
   function gargHead(c, x, y, awake, snarl) {
@@ -891,17 +893,22 @@
     c.restore();
   }
   function gargImg(mode, f, awake) {
-    return spr('garg_' + mode + f + (awake ? 'a' : ''), 56, 48, GA_PAL, (c) => {
-      c.translate(28, 46);
+    return spr('garg_' + mode + f + (awake ? 'a' : ''), 72, 64, GA_PAL, (c) => {
+      c.translate(36, 62);
       if (mode === 'perch') {
+        // folded wings rising behind the shoulders
+        c.save();
+        c.translate(-4, -20);
+        gargWing(c, -0.18, [GA.d, GA.dd, GA.m], 0.55, 1.2);
+        c.restore();
+        c.save();
+        c.translate(-2, -19);
+        gargWing(c, -0.05, [GA.m, GA.d, GA.l], 0.6, 1.15);
+        c.restore();
         // tail curled around the feet
         gfx.limb(c, -7, -5, -13, -3, 2.2, GA.d);
         gfx.limb(c, -13, -3, -11, 0, 1.8, GA.d);
         gfx.poly(c, [-11, 0, -9, -1.8, -8.5, 0.6], GA.dd);
-        // folded wings rising behind the shoulders
-        gfx.poly(c, [-3, -19, -6, -33, -9, -27, -12, -30, -11, -16, -6, -8], GA.d);
-        gfx.poly(c, [-5, -21, -6, -33, -8, -25, -9, -14], GA.m);
-        gfx.limb(c, -4.5, -20, -6, -32.5, 1.1, GA.l);
         // haunch & back foot
         gfx.ellipse(c, -3, -8, 6.5, 5.5, 0, GA.m);
         gfx.ellipse(c, -4.5, -9.5, 3.8, 3, 0, GA.l);
@@ -925,48 +932,53 @@
           c.fillStyle = GA.moss;
           c.fillRect(-2, -23, 3, 1);
           c.fillRect(-4, -22, 2, 1);
+          c.fillRect(2, -9, 2, 1);
         }
         gargHead(c, 8.5, -22, awake, awake);
         return;
       }
-      // flying / diving: body roughly horizontal
-      const wingA = mode === 'dive' ? -1.75 : [-0.35, -1.05, -1.9, -1.05][f];
-      if (mode === 'dive') {
-        c.translate(0, -18);
-        c.rotate(0.62);
-        c.translate(0, 18);
-      }
+      // flying / diving: a hunched demon hanging under big wings
+      const dive = mode === 'dive';
+      const wingA = dive ? -2.15 : [-0.3, -1.0, -1.85, -1.0][f];
+      c.translate(0, -20);
+      c.rotate(dive ? 1.0 : 0.22);
+      c.translate(0, 20);
       // far wing (darker, behind)
       c.save();
-      c.translate(-1, -21);
-      gargWing(c, wingA + 0.25, [GA.d, GA.dd, GA.m], 0.92);
+      c.translate(-3, -26);
+      gargWing(c, wingA + 0.3, [GA.d, GA.dd, GA.m], 1.35, 1.35);
       c.restore();
       // tail
-      gfx.limb(c, -8, -17, -15, -15 + (mode === 'dive' ? 0 : Math.sin(f * 1.6) * 1.5), 2, GA.d);
-      gfx.limb(c, -15, -15, -20, -17, 1.4, GA.d);
-      gfx.poly(c, [-20, -17, -23, -19, -22, -15.5], GA.dd);
-      // legs tucked back with talons
-      gfx.limb(c, -5, -14, -9, -9, 3, GA.d);
-      gfx.limb(c, -9, -9, -6, -5, 2.2, GA.d);
-      c.fillStyle = GA.horn;
-      c.fillRect(-6, -5, 2, 1);
-      c.fillRect(-7, -4, 1, 1.2);
+      const tw = dive ? 0 : Math.sin(f * 1.6) * 1.5;
+      gfx.limb(c, -3, -14, -9, -9 + tw, 2.2, GA.d);
+      gfx.limb(c, -9, -9 + tw, -12, -3, 1.6, GA.d);
+      gfx.poly(c, [-12, -3, -15, -1, -11, 0.5, -10.5, -2.5], GA.dd);
+      // far leg
+      gfx.limb(c, -2, -14, 1, -8, 2.8, GA.d);
+      gfx.limb(c, 1, -8, -3, -3, 2.2, GA.d);
       // torso
-      gfx.ellipse(c, 0, -17.5, 8.5, 5.4, -0.15, GA.m);
-      gfx.ellipse(c, 2, -15.5, 5.5, 2.8, -0.15, GA.l);
-      gfx.limb(c, -6, -20, 3, -21.5, 1, GA.d);
-      // arms reaching forward, claws spread
-      const reach = mode === 'dive' ? 3 : 0;
-      gfx.limb(c, 5, -16, 9 + reach, -11.5, 2.6, GA.m);
-      gfx.limb(c, 9 + reach, -11.5, 13 + reach * 1.5, -10, 2.1, GA.m);
+      gfx.ellipse(c, 0, -20.5, 5.8, 8.4, 0.15, GA.m);
+      gfx.ellipse(c, 2.2, -20.5, 2.8, 5.4, 0.15, GA.l);
+      gfx.limb(c, -4, -26, -4.5, -15, 1, GA.d);
+      // near leg with talons
+      gfx.limb(c, 0, -14, 4, -9, 3.2, GA.m);
+      gfx.limb(c, 4, -9, 1, -3.5, 2.5, GA.m);
+      gfx.limb(c, 1, -14, 4.6, -9.6, 1, GA.l);
       c.fillStyle = GA.horn;
-      c.fillRect(13 + reach * 1.5, -11.5, 2, 1);
-      c.fillRect(13 + reach * 1.5, -9.5, 2, 1);
-      gargHead(c, 10, -22.5, true, mode === 'dive');
+      c.fillRect(0, -3, 2, 1.2);
+      c.fillRect(2, -2.5, 1.2, 1.4);
+      // arms reaching forward, claws spread
+      const reach = dive ? 3 : 0;
+      gfx.limb(c, 3, -25, 8 + reach, -21, 2.6, GA.m);
+      gfx.limb(c, 8 + reach, -21, 12 + reach * 1.5, -23 + reach * 0.5, 2.1, GA.m);
+      c.fillStyle = GA.horn;
+      c.fillRect(12 + reach * 1.5, -24.5 + reach * 0.5, 2, 1);
+      c.fillRect(12.5 + reach * 1.5, -22.5 + reach * 0.5, 2, 1);
+      gargHead(c, 6, -31, true, dive);
       // near wing (in front)
       c.save();
-      c.translate(1, -20);
-      gargWing(c, wingA, [GA.m, GA.d, GA.l], 1);
+      c.translate(-1, -25);
+      gargWing(c, wingA, [GA.m, GA.d, GA.l], 1.45, 1.45);
       c.restore();
     });
   }
@@ -1050,15 +1062,15 @@
       const st = e.state;
       if (st === 'perch' || st === 'wake') {
         const shake = st === 'wake' && e.stT % 4 < 2 ? (e.stT % 8 < 4 ? 1 : -1) : 0;
-        e.blit(ctx, gargImg('perch', 0, st === 'wake' && e.stT > 8), sx + shake, sy, 28, 46, e.facing < 0);
+        e.blit(ctx, gargImg('perch', 0, st === 'wake' && e.stT > 8), sx + shake, sy, 36, 62, e.facing < 0);
         if (st === 'wake' && e.stT > 8) G.gfx.addLight(sx + e.facing * 9, sy - 23, 22, '#ff6020', 0.6);
         return;
       }
       const mode = st === 'dive' ? 'dive' : 'fly';
       const f = st === 'aim' ? 0 : Math.floor(e.t / (st === 'pull' ? 3 : 5)) % 4;
-      e.blit(ctx, gargImg(mode, mode === 'dive' ? 0 : f, true), sx, sy + 3, 28, 46, e.facing < 0);
-      if (!e.preview) G.gfx.addLight(sx + e.facing * 10, sy - 20, 20, '#ff6020', 0.5);
-      if (st === 'aim' && e.stT > 8) glow(ctx, sx + e.facing * 13, sy - 21, 2, '#ffd060', 0.9);
+      e.blit(ctx, gargImg(mode, mode === 'dive' ? 0 : f, true), sx, sy + 9, 36, 62, e.facing < 0);
+      if (!e.preview) G.gfx.addLight(sx + e.facing * 8, sy - 24, 20, '#ff6020', 0.5);
+      if (st === 'aim' && e.stT > 8) glow(ctx, sx + e.facing * 10, sy - 23, 2, '#ffd060', 0.9);
     },
   });
 

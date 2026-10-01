@@ -113,6 +113,12 @@
     b.set(c0 + 7, y, '/');
   }
 
+  // fill the open tiles below row ySurf with water (stops at the first non-empty tile)
+  function flood(b, x0, x1, ySurf) {
+    for (let x = x0; x <= x1; x++)
+      for (let y = ySurf; y < b.th && b.get(x, y) === '.'; y++) b.set(x, y, '~');
+  }
+
   // ---------------------------------------------------------- painting
   // onEnter hook that paints extra scenery on the room's background canvas
   // (after the theme back wall/decor) and may add static lights.
@@ -260,7 +266,7 @@
     // rough side walls, a stalactite column under T
     side(b, 'L', 16, '112233322111112222333221');
     side(b, 'R', 14, '22334443322111122233');
-    hang(b, 7, 17, '1356531');
+    hang(b, 6, 15, '2356886532');
     // the cave floor: a mound on the right, the drop into the lake on the left
     rise(b, 27, 39, '1234444444321');
     rise(b, 1, 39, '21100');
@@ -277,5 +283,70 @@
     b.item(43, 11, 'hp_up');
     b.enemy(26, 8, 'crystal_crawler');
     b.enemy(22, 25, 'crystal_crawler');
+  });
+  // C2 — the underground lake: a long cavern of black water, rock islands and a
+  // moonlit grotto at its western end. Arrival from the descent above (T4).
+  R({
+    id: 'cav_lake', area: 'caverns', x: 10, y: 23, w: 6, h: 2, lvl: 2, entry: 'T4', darkness: 0.52,
+    decor: ['stalactite', 'crystal', 'stalactite'],
+    onEnter: paint((c, room, th, rng, L) => {
+      caveDetail(c, room, th, rng, L, { crys: 0.05 });
+      // moonlight falling through a crack onto the grotto
+      const g = c.createLinearGradient(0, 32, 0, 18 * 16);
+      g.addColorStop(0, 'rgba(190,210,255,0.28)');
+      g.addColorStop(1, 'rgba(190,210,255,0.04)');
+      c.fillStyle = g;
+      c.beginPath();
+      c.moveTo(9 * 16, 32);
+      c.lineTo(11 * 16, 32);
+      c.lineTo(14 * 16, 18 * 16);
+      c.lineTo(7 * 16, 18 * 16);
+      c.closePath();
+      c.fill();
+      L.push({ x: 10 * 16, y: 16 * 16, r: 80, color: '#b8c8ff', i: 0.8 });
+      // pale reflections on the lake
+      for (let i = 0; i < 40; i++) rect(c, rng.int(24 * 16, 92 * 16), 21 * 16 + rng.int(2, 60), rng.int(6, 22), 1, 'rgba(150,200,230,0.18)');
+    }),
+  }, (b) => {
+    b.fill(0, 0, b.tw - 1, b.th - 1);
+    // the cavern
+    carve(b, 1, 142, [[1, 9], [8, 6], [14, 4], [24, 3], [40, 5], [52, 3], [64, 2], [78, 4], [92, 3], [102, 5], [114, 4], [122, 9], [132, 12], [142, 15]], [[1, 25], [142, 25]], { jag: 2, per: 3 });
+    // crack above the grotto (moonlight) and the shaft under the T4 hole
+    b.clear(9, 2, 10, 6);
+    b.door('T', 4);
+    b.clear(104, 2, 113, 7);
+    // lake bed, islands and shores (heights above the bottom row)
+    rise(b, 1, 25, '8888888888888888888' + '87654321' + '1122111' + '24688742' + '111211111112' + '369aaa963' + '11122111' + '257752' + '11212112');
+    rise(b, 86, 25, '23456777777777777777' + '7654321');
+    // arrival ledge under the hole and the rocky steps down to the east exit
+    shelf(b, 99, 114, 8, 4);
+    shelf(b, 111, 113, 5, 1, { r: false });
+    shelf(b, 114, 120, 12, 3);
+    shelf(b, 121, 128, 16, 3);
+    shelf(b, 130, 138, 21, 2);
+    // a ledge above the great island
+    b.plat(55, 61, 10);
+    hang(b, 54, 3, '1233443210');
+    // stalactite pillars over the water
+    hang(b, 44, 3, '2468642');
+    hang(b, 80, 4, '136631');
+    // the water
+    flood(b, 20, 94, 21);
+    b.door('R', 1);
+    // ---- entities
+    b.spawn(66, 4, { t: 'cb_fall', w: 2, h: 17 });
+    b.item(11, 17, 'moonlit_blade');
+    b.item(58, 9, 'blood_signet');
+    b.candle(5, 13);
+    b.candle(17, 13);
+    b.candle(39, 14);
+    b.candle(74, 15);
+    b.candle(97, 14);
+    b.candle(103, 4, 'heart_big');
+    b.candle(124, 12);
+    b.candle(136, 22);
+    b.enemy(49, 24, 'drowned_one');
+    b.enemy(84, 24, 'drowned_one');
+    b.enemy(96, 18, 'cave_toad');
   });
 })();

@@ -149,6 +149,18 @@
     const hx = fx + ((pose ? pose.hipX + Math.sin(ln) * 18.5 : 0) - 3) * f;
     const hy = fy + (pose ? pose.hipY - Math.cos(ln) * 18.5 : -39.5) - 1;
     simChain(this.hair, hx, hy, 3.4, 0.2, -f * 0.06 - this.vx * 0.05, this.vy > 0 ? -Math.min(this.vy, 6) * 0.03 : 0, fy - 4, 0.78);
+    // keep the hair and cape from standing on end during long falls
+    for (let i = 1; i < this.hair.length; i++) {
+      const p = this.hair[i];
+      if (p.y < hy - 1 + i * 0.6) {
+        p.y = hy - 1 + i * 0.6;
+        p.x -= f * 0.6;
+      }
+    }
+    for (let i = 1; i < this.cape.length; i++) {
+      const p = this.cape[i];
+      if (p.y < ay - 6) p.y = ay - 6;
+    }
   };
 
   // ---- form changes --------------------------------------------------------------------
