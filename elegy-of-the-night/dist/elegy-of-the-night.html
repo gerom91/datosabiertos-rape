@@ -22,14 +22,15 @@
   }
   html, body { height: 100%; margin: 0; background: var(--bg); color: var(--bone); overflow: hidden; }
   body { font-family: var(--font-body); -webkit-user-select: none; user-select: none; touch-action: none; }
-  #wrap { position: fixed; inset: 0; background: var(--bg); }
+  /* the game area stays clear of notches and home indicators; the body colour fills the insets */
+  #wrap { position: fixed; top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px); bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px); background: var(--bg); }
   #game { display: block; width: 100%; height: 100%; outline: none; image-rendering: pixelated; }
   #loading { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-title); letter-spacing: 0.2em; color: var(--gold); font-size: 14px; pointer-events: none; }
   #touch { position: absolute; inset: 0; pointer-events: none; }
   #touch[hidden] { display: none !important; }
   #touch .pad, #touch .btn, #touch .mini { pointer-events: auto; touch-action: none; }
   #touch .pad {
-    position: absolute; left: max(14px, env(safe-area-inset-left, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px));
+    position: absolute; left: 14px; bottom: 14px;
     width: min(34vmin, 170px); height: min(34vmin, 170px); border-radius: 50%;
     background: radial-gradient(circle, rgba(236,230,214,0.10) 0 30%, rgba(236,230,214,0.05) 31% 100%);
     border: 1px solid var(--mist);
@@ -37,7 +38,7 @@
   #touch .pad::before, #touch .pad::after { content: ""; position: absolute; background: var(--mist); }
   #touch .pad::before { left: 50%; top: 14%; bottom: 14%; width: 2px; transform: translateX(-50%); }
   #touch .pad::after { top: 50%; left: 14%; right: 14%; height: 2px; transform: translateY(-50%); }
-  #touch .btns { position: absolute; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px)); width: min(40vmin, 200px); height: min(36vmin, 180px); }
+  #touch .btns { position: absolute; right: 14px; bottom: 14px; width: min(40vmin, 200px); height: min(36vmin, 180px); }
   #touch .btn {
     position: absolute; width: 33%; aspect-ratio: 1; max-width: 100%; border-radius: 50%;
     display: grid; place-items: center; font-family: var(--font-title); font-size: clamp(10px, 2.6vmin, 14px); color: var(--bone);
@@ -49,9 +50,9 @@
   #touch .b-l { right: 0; bottom: 38%; }
   #touch .b-dash { right: 68%; bottom: 0; }
   #touch .b-sub { right: 36%; bottom: 46%; }
-  #touch .minis { position: absolute; top: 50%; transform: translateY(-50%); right: max(10px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 6px; }
+  #touch .minis { position: absolute; top: 50%; transform: translateY(-50%); right: 10px; display: flex; flex-direction: column; gap: 6px; }
   body.portrait #touch .minis { top: calc(var(--screen-bottom, 50vh) + 12px); transform: none; left: 50%; right: auto; translate: -50% 0; flex-direction: row; flex-wrap: wrap; justify-content: center; }
-  body.portrait #touch .pad, body.portrait #touch .btns { bottom: max(28px, env(safe-area-inset-bottom, 0px)); }
+  body.portrait #touch .pad, body.portrait #touch .btns { bottom: 28px; }
   #touch .mini {
     font-family: var(--font-title); font-size: 11px; padding: 6px 9px; border-radius: 6px; color: var(--bone);
     background: rgba(20, 14, 30, 0.5); border: 1px solid rgba(201, 162, 74, 0.45);
@@ -1800,8 +1801,8 @@
       darkness: 0.15, tint: '#06040a', candle: 'lantern', decor: ['gear', 'clockface', 'window', 'pendulum', 'gear'],
     },
     catacombs: {
-      solid: 'bone', top: 'none', wall: 'skulls', far: 'none',
-      c: { base: '#3a2e24', dark: '#1c1610', light: '#5e4c3a', mortar: '#0e0a08', accent: '#d8cdb0', accent2: '#f0e8d0', wall: '#181210', wall2: '#100c0a', trim: '#6a5a44' },
+      solid: 'bone', top: 'bone', wall: 'skulls', far: 'none',
+      c: { base: '#4a3a2c', dark: '#1c1610', light: '#6e5a44', mortar: '#0e0a08', accent: '#d8cdb0', accent2: '#f0e8d0', wall: '#140f0c', wall2: '#0c0907', trim: '#6a5a44' },
       darkness: 0.62, tint: '#060402', decor: ['niche', 'torch', 'bonepile', 'chain'],
     },
     chapel: {
@@ -1964,6 +1965,12 @@
             px(ctx, x, y, 16, 1, c.accent2);
             px(ctx, x, y + 1, 16, 1, c.accent);
             if (rng.next() < 0.3) px(ctx, x + rng.int(2, 13), y + 2, 1, 2, c.accent);
+            break;
+          case 'bone':
+            px(ctx, x, y, 16, 2, U.shade(c.accent, -0.15));
+            px(ctx, x, y, 16, 1, c.accent2);
+            px(ctx, x, y + 2, 16, 1, U.shade(c.base, -0.5));
+            if (rng.next() < 0.4) px(ctx, x + rng.int(1, 12), y + 2, 3, 1, U.shade(c.accent, -0.35));
             break;
           case 'brass':
             px(ctx, x, y, 16, 3, c.accent);
@@ -2137,9 +2144,10 @@
       }
       case 'skulls': {
         px(ctx, 0, 0, W, H, c.wall);
+        // recessed ossuary wall: dim skulls so the bone-lined rock in front stays readable
         for (let y = 2; y < H; y += 9)
           for (let x = (y % 18 ? 0 : 5); x < W; x += 10)
-            if (rng.next() < 0.85) skull(ctx, x, y, U.shade(c.accent, -0.55 + rng.next() * 0.1), c.wall2);
+            if (rng.next() < 0.7) skull(ctx, x, y, U.shade(c.accent, -0.74 + rng.next() * 0.08), c.wall2);
         break;
       }
       case 'curtain': {
@@ -14683,7 +14691,10 @@
   const awake = (e) => e.started && G.game.boss === e;
   // wake up only once the player is close AND the boss is well inside the camera view,
   // so the intro scene is always staged with the boss on screen
-  const wakeSeen = (dist) => (e) => Math.abs(e.dxp()) < dist && Math.abs(e.dyp()) < 260 && e.onScreen(-24);
+  const wakeSeen = (dist) => (e, g) => {
+    const sx = e.cx - g.camx;
+    return Math.abs(e.dxp()) < dist && Math.abs(e.dyp()) < 260 && sx > 70 && sx < G.W - 70 && e.onScreen(0);
+  };
 
   // ---- small drawing helpers ----------------------------------------------------------------
   function glow(ctx, x, y, r, col, a) {
@@ -19859,7 +19870,8 @@
   });
 
   // E8 — cellar with a low tunnel only a wolf can pass (to the Caverns)
-  R({ id: 'ent_cellar', area: 'entrance', x: 11, y: 20, w: 3, h: 1, darkness: 0.35 }, (b) => {
+  // R0 is the wolf tunnel into the Caverns (lvl 2)
+  R({ id: 'ent_cellar', area: 'entrance', x: 11, y: 20, w: 3, h: 1, darkness: 0.35, gates: { R0: 2 } }, (b) => {
     b.shell();
     b.door('L', 0);
     b.door('R', 0);
@@ -21534,11 +21546,6 @@
   });
 
   // ======================== UNDERGROUND CAVERNS ========================
-  // ent_cellar (rooms_castle.js) reaches the Caverns through a 1-tile wolf
-  // tunnel: its R0 door needs the wolf (lvl 2) — tell the validator.
-  const cellar = G.world.rooms.ent_cellar;
-  if (cellar) cellar.gates = Object.assign({ R0: 2 }, cellar.gates || {});
-
   // C1 — the descent: the cellar's wolf tunnel opens high in a cave shaft that
   // winds down to a drop into the lake (B0) and a passage to the falls (R2).
   R({
